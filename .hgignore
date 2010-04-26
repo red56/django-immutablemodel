@@ -1,10 +1,14 @@
 syntax: glob
 
+*.pyc
+
 .installed.cfg
 bin
 develop-eggs
 
 *.egg-info
+eggs
+.coverage
 
 tmp
 build
