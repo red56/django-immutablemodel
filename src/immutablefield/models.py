@@ -1,12 +1,13 @@
 from django.db import models
 from django.db.models.base import ModelBase
 
+
 class ImmutableModelOptions(object):
     immutable = []
     quiet = True
-    
+
     def __init__(self, opts):
-        if opts:       
+        if opts:
             for key, value in opts.__dict__.iteritems():
                 setattr(self, key, value)
 

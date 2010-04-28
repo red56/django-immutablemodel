@@ -13,3 +13,7 @@ eggs
 tmp
 build
 dist
+py-*
+Django-*
+coverage-*
+nose-*
