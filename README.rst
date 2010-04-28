@@ -21,10 +21,9 @@ To install directly from Bitbucket::
 
     pip install -e hg+http://bitbucket.org/robmadole/django-immutablefield#egg=django-immutablefield
 
-**Do you need this in Django's ``INSTALLED_APPS``?**
-
-    No, it's not necessary.  You just have to be able to
-    ``from immutablefield.models import ImmutableModel``.
+.. info:: Do you need this in Django's ``INSTALLED_APPS``?**
+   No, it's not necessary.  You just have to be able to
+   ``from immutablefield.models import ImmutableModel``.
 
 What does it do
 ---------------
@@ -32,10 +31,11 @@ What does it do
 Allows you to define certain fields as immutable inside of Django models.
 
 It works as a drop-in replacement for Django's own ``Model``.  This means you
-can ``ImmutableModel`` even if you don't specify meta information specific to
-it.
+can ``ImmutableModel`` even if you don't specify ``ImmutableMeta``.
 
-Here's an example::
+Here's an example
+
+.. code-block:: python
 
     from django.db import models
 
@@ -52,7 +52,9 @@ Here's an example::
             return u'%s' % self.name
 
 Now you can try with all your might, but the field won't change (within reason,
-sure this is Python we can do almost anything if we try hard enough)::
+sure this is Python we can do almost anything if we try hard enough)
+
+.. code-block:: python
 
     >>> queen_anne = CruiseShip.objects.create(name='Queen Anne')
     <CruiseShip 'Queen Anne'>
@@ -64,14 +66,19 @@ You can make it complain
 ------------------------
 
 Change the meta section to include ``quiet = False`` and it will raise a
-``ValueError`` if an attempt is made to change this value::
+``ValueError`` if an attempt is made to change this value
 
-        class ImmutableMeta:
-            # After ya name a ship, you can't change it matey
-            immutable = ['name']
-            quiet = False
+.. code-block:: python
 
-Example::
+    class ImmutableMeta:
+        # After ya name a ship, you can't change it matey
+        immutable = ['name']
+        quiet = False
+
+The error is raised as soon as you try and set the field, not when ``save()`` is
+called.
+
+.. code-block:: python
 
     >>> queen_anne = CruiseShip.objects.create(name='Queen Anne')
     <CruiseShip 'Queen Anne'>
@@ -81,10 +88,10 @@ Example::
 Reference
 ---------
 
-**``ImmutableMeta``**
+**ImmutableMeta**
 
     Specify options that control how immutable fields are handled when
-    subclassing the ``ImmutableModel` class
+    subclassing the ``ImmutableModel`` class
 
     ``immutable``
 
@@ -92,7 +99,7 @@ Reference
         This value must be a tuple or a list and contain the names of the fields
         as strings.
 
-        Example ::
+        .. code-block:: python
             
             class ImmutableMeta:
                 immutable = ['my_special_id']
