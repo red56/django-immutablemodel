@@ -97,6 +97,11 @@ Reference
 
             class ImmutableMeta:
                 immutable = ['my_special_id']
+
+        Specify multiple fields::
+
+            class ImmutableMeta:
+                immutable = ['my_special_id', 'name', 'foreign_key']
     
     ``quiet``
 
@@ -104,4 +109,8 @@ Reference
         prevent it.
 
         Set this value to ``False`` to raise a ``ValueError`` when an immutable
-        field is changed.
+        field is changed.::
+
+            class ImmutableMeta:
+                immutable = ['my_special_id']
+                quiet = False
