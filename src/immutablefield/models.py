@@ -1,10 +1,14 @@
 from django.db import models
 from django.db.models.base import ModelBase
 
+try:
+    from django.conf.settings import IMMUTABLE_QUIET
+except ImportError:
+    IMMUTABLE_QUIET = True
 
 class ImmutableModelOptions(object):
     immutable = []
-    quiet = True
+    quiet = IMMUTABLE_QUIET
 
     def __init__(self, opts):
         if opts:
