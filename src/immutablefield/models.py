@@ -8,13 +8,27 @@ except ImportError:
 
 class ImmutableModelOptions(object):
     immutable = []
+    sign_off_field = None
     quiet = IMMUTABLE_QUIET
 
     def __init__(self, opts):
-        if opts:
-            for key, value in opts.__dict__.iteritems():
-                setattr(self, key, value)
+        if not opts: return
 
+        for key, value in opts.__dict__.iteritems():
+            setattr(self, key, value)
+
+        if isinstance(self.immutable, basestring):
+            raise TypeError('immutable attribute in ImmutableMeta must be '
+                            'iterable and not a string')
+
+    def can_change_field(self, obj, field_name):
+        if field_name not in self.immutable:
+            return True
+
+        if sign_off_field is None:
+            return False
+
+        return bool(getattr(obj,sign_off_field))
 
 class ImmutableModelBase(ModelBase):
     def __new__(cls, name, bases, attrs):
@@ -55,10 +69,7 @@ class ImmutableModel(models.Model):
 
     def __setattr__(self, name, value):
         meta = self._immutable_meta
-        if isinstance(meta.immutable, basestring):
-            raise TypeError('immutable attribute in ImmutableMeta must be '
-                            'iterable and not a string')
-        if name in meta.immutable:
+        if not meta.can_change_field(self, name):
             try:
                 current_value = getattr(self, name, None)
             except:
