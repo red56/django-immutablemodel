@@ -90,7 +90,8 @@ class ImmutableModel(models.Model):
                 current_value = getattr(self, name, None)
             except:
                 current_value = None
-            if current_value is not None and current_value is not '':
+            if current_value is not None and current_value is not '' and \
+                current_value != value:
                 if meta.quiet:
                     return
                 raise ValueError(
