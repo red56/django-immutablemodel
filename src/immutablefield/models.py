@@ -17,18 +17,34 @@ class ImmutableModelOptions(object):
         for key, value in opts.__dict__.iteritems():
             setattr(self, key, value)
 
-        if isinstance(self.immutable, basestring):
+        if not (isinstance(self.immutable, list) or self.immutable is None):
             raise TypeError('immutable attribute in ImmutableMeta must be '
-                            'iterable and not a string')
+                            'a list')
+
+        if not (isinstance(self.sign_off_field, basestring) or \
+                self.sign_off_field is None):
+            raise TypeError('sign_off_field attribute in ImmutableMeta must be '
+                            'a string')
 
     def can_change_field(self, obj, field_name):
         if field_name not in self.immutable:
             return True
 
-        if sign_off_field is None:
+        if self.sign_off_field is None:
             return False
 
-        return bool(getattr(obj,sign_off_field))
+        """
+        During the creation of a Django ORM object, as far as we know,
+        the object starts with no fields and they are added after the object
+        creation. This leads to an object with some fields created and some
+        fields to create.
+        In the presence of a sign_off field decision,
+        if the field does not exists, it can be changed.
+        """
+        if hasattr(obj, self.sign_off_field):
+            return not bool(getattr(obj, self.sign_off_field))
+        else:
+            return True
 
 class ImmutableModelBase(ModelBase):
     def __new__(cls, name, bases, attrs):

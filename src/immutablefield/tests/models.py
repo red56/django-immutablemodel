@@ -6,26 +6,47 @@ class NoImmutable(ImmutableModel):
     name = models.CharField(max_length=50)
 
 
-class Simple(ImmutableModel):
+class SimpleNoSignOffField(ImmutableModel):
     special_id = models.IntegerField()
     name = models.CharField(max_length=50)
 
     class ImmutableMeta:
-        immutable = ('special_id',)
+        immutable = ['special_id']
 
 
-class GoofedUpMeta(ImmutableModel):
+class SimpleSignOffField(ImmutableModel):
+    special_id = models.IntegerField()
+    name = models.CharField(max_length=50)
+    sign_off = models.BooleanField(default=False)
+
+    class ImmutableMeta:
+        immutable = ['special_id']
+        sign_off_field = 'sign_off'
+
+
+class ComplexSignOffField(ImmutableModel):
+    sign_off = models.BooleanField(default=True)
     special_id = models.IntegerField()
     name = models.CharField(max_length=50)
 
     class ImmutableMeta:
-        immutable = 'special_id'
+        immutable = ['special_id']
+        sign_off_field = 'sign_off'
 
 
-class Noisy(ImmutableModel):
+class NoisyNoSignOffField(ImmutableModel):
     special_id = models.IntegerField()
-    name = models.CharField(max_length=50)
 
     class ImmutableMeta:
-        immutable = ('special_id',)
+        immutable = ['special_id']
+        quiet = False
+
+
+class NoisySignOffField(ImmutableModel):
+    special_id = models.IntegerField()
+    sign_off = models.BooleanField(default=False)
+
+    class ImmutableMeta:
+        immutable = ['special_id']
+        sign_off_field = 'sign_off'
         quiet = False
