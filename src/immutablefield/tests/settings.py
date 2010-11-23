@@ -1,3 +1,4 @@
+# encoding: utf-8
 # Django settings for temp project.
 
 DEBUG = True

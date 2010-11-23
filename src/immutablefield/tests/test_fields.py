@@ -1,3 +1,4 @@
+# encoding: utf-8
 import py
 
 from immutablefield.tests.models import *
