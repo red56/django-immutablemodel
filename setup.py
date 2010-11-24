@@ -25,7 +25,5 @@ setup(
     url='http://bitbucket.org/robmadole/django-immutablefield',
     packages = [ 'immutablefield' ],
     zip_safe=False,
-    install_requires=install_requires,
-    setup_requires=setup_requires,
     entry_points={}
 )
