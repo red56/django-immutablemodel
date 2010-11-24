@@ -33,7 +33,8 @@ class SimpleSignOffField(ImmutableModel):
 class ComplexSignOffField(ImmutableModel):
     sign_off = models.BooleanField(default=True)
     special_id = models.IntegerField()
-    name = models.CharField(max_length=50),
+    name = models.CharField(max_length=50)
+
     class ImmutableMeta:
         immutable = ['special_id']
         sign_off_field = 'sign_off'
