@@ -1,5 +1,4 @@
 # encoding: utf-8
-# encoding: utf-8
 from django.db import models
 from django.test import TestCase
 
@@ -16,7 +15,7 @@ class SimpleNoSignOffField(ImmutableModel):
     special_id = models.IntegerField()
     name = models.CharField(max_length=50)
 
-    class ImmutableMeta:
+    class Meta:
         immutable = ['special_id']
 
 
@@ -25,9 +24,9 @@ class SimpleSignOffField(ImmutableModel):
     name = models.CharField(max_length=50)
     sign_off = models.BooleanField(default=False)
 
-    class ImmutableMeta:
+    class Meta:
         immutable = ['special_id']
-        sign_off_field = 'sign_off'
+        immutable_sign_off_field = 'sign_off'
 
 
 class ComplexSignOffField(ImmutableModel):
@@ -35,30 +34,30 @@ class ComplexSignOffField(ImmutableModel):
     special_id = models.IntegerField()
     name = models.CharField(max_length=50)
 
-    class ImmutableMeta:
+    class Meta:
         immutable = ['special_id']
-        sign_off_field = 'sign_off'
+        immutable_sign_off_field = 'sign_off'
 
 
 class NoisyNoSignOffField(ImmutableModel):
     special_id = models.IntegerField()
 
-    class ImmutableMeta:
+    class Meta:
         immutable = ['special_id']
-        quiet = False
+        immutable_quiet = False
 
 
 class NoisySignOffField(ImmutableModel):
     special_id = models.IntegerField()
     sign_off = models.BooleanField(default=False)
 
-    class ImmutableMeta:
+    class Meta:
         immutable = ['special_id']
-        sign_off_field = 'sign_off'
-        quiet = False
+        immutable_sign_off_field = 'sign_off'
+        immutable_quiet = False
 
 
-class NoImmutableMetaTest(TestCase):
+class NoMetaTest(TestCase):
     def setUp(self):
         self.obj = NoImmutable.objects.create(name='Vader')
     def test__simple(self):
@@ -66,7 +65,7 @@ class NoImmutableMetaTest(TestCase):
         self.obj.name = 'Anakin'
         self.obj.save()
 
-        db_object = SimpleNoSignOffField.objects.all()[0]
+        db_object = NoImmutable.objects.all()[0]
         self.assertTrue(self.obj.name, 'Anakin')
         self.assertTrue(db_object.name, 'Anakin')
 
