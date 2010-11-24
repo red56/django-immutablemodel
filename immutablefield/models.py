@@ -57,31 +57,6 @@ class ImmutableModelBase(ModelBase):
 
 
 class ImmutableModel(models.Model):
-    """
-    Use this as the base of your model to enable immutable field support
-
-    Example::
-
-        MyModel(ImmutableModel):
-            special_id = models.CharField(max_length=64, primary_key=True)
-
-            class ImmutableMeta:
-                immutable = ['special_id']
-
-            def __unicode__(self):
-                return u'%s' % self.special_id
-
-    Create an instance::
-
-        >>> thing = MyModel.objects.create(special_id='123456789asdfgjkl')
-        <MyModel '1234567890asdfgjkl'>
-        >>> thing.special_id
-        '1234567890asdfgjkl'
-        >>> thing.special_id = 'somethingElse'
-        >>> thing.save()
-        >>> thing.special_id
-        '1234567890asdfgjkl'
-    """
     __metaclass__ = ImmutableModelBase
 
     def __setattr__(self, name, value):
