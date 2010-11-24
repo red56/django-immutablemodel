@@ -2,7 +2,7 @@
 from django.db import models
 from django.test import TestCase
 
-from immutablefield.models import ImmutableModel
+from immutablefield import ImmutableModel
 
 """
     Test Classes
