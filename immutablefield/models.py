@@ -78,6 +78,7 @@ class ImmutableModel(models.Model):
             except:
                 current_value = None
             if current_value is not None and current_value is not '' and \
+                getattr(current_value, '_file', 'not_existant') is not None and \
                 current_value != value:
                 if getattr(self._meta, 'immutable_quiet', settings.IMMUTABLE_QUIET):
                     return
