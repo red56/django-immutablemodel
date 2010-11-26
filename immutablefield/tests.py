@@ -135,12 +135,49 @@ class CanCreateModelSignOffFieldTest(TestCase):
         self.assertTrue(db_object.name, 'Obi-Wan')
         self.assertTrue(db_object.sign_off, True)
 
+    def test__sign_off_field_true_at_create(self):
+        sign_off_true_at_first = ComplexSignOffField.objects.create(
+            special_id=1,
+            name='Yoda',
+            sign_off=True,
+        )
+
+        self.assertEqual(
+            sign_off_true_at_first.special_id,
+            1,
+        )
+
+        self.assertEqual(
+            sign_off_true_at_first.sign_off,
+            True,
+        )
+
+        self.assertEqual(
+            sign_off_true_at_first.name,
+            'Yoda',
+        )
+
+        sign_off_true_at_first.special_id = 1337
+        sign_off_true_at_first.name = 'Obi-Wan'
+        sign_off_true_at_first.save()
+        db_object = ComplexSignOffField.objects.get(special_id=1)
+
+        # Should not change, since the signed-off field is true
+        # Of course, that name is still changable
+        self.assertTrue(sign_off_true_at_first.special_id, 1)
+        self.assertTrue(sign_off_true_at_first.name, 'Obi-Wan')
+        self.assertTrue(sign_off_true_at_first.sign_off, True)
+        self.assertTrue(db_object.special_id, 1)
+        self.assertTrue(db_object.name, 'Obi-Wan')
+        self.assertTrue(db_object.sign_off, True)
+
+
 class CanCreateModelSignOffFieldInAnyOrderTest(TestCase):
     def setUp(self):
         self.obj = ComplexSignOffField.objects.create(
+            sign_off=False,
             special_id=1,
             name='Yoda',
-            sign_off=False,
         )
 
     def test__simple_not_signed_off(self):
@@ -178,6 +215,43 @@ class CanCreateModelSignOffFieldInAnyOrderTest(TestCase):
         self.assertTrue(db_object.name, 'Obi-Wan')
         self.assertTrue(db_object.sign_off, True)
 
+    def test__sign_off_field_true_at_create(self):
+        sign_off_true_at_first = ComplexSignOffField.objects.create(
+            sign_off=True,
+            special_id=100,
+            name='Yoda',
+        )
+
+        self.assertEqual(
+            sign_off_true_at_first.special_id,
+            100,
+        )
+
+        self.assertEqual(
+            sign_off_true_at_first.sign_off,
+            True,
+        )
+
+        self.assertEqual(
+            sign_off_true_at_first.name,
+            'Yoda',
+        )
+
+        sign_off_true_at_first.special_id = 1337
+        sign_off_true_at_first.name = 'Obi-Wan'
+        sign_off_true_at_first.save()
+
+        db_object = ComplexSignOffField.objects.get(special_id=100)
+
+        # Should not change, since the signed-off field is true
+        # Of course, that name is still changable
+        self.assertTrue(sign_off_true_at_first.special_id, 100)
+        self.assertTrue(sign_off_true_at_first.name, 'Obi-Wan')
+        self.assertTrue(sign_off_true_at_first.sign_off, True)
+        self.assertTrue(db_object.special_id, 100)
+        self.assertTrue(db_object.name, 'Obi-Wan')
+        self.assertTrue(db_object.sign_off, True)
+
 class WillRaiseErrorsTest(TestCase):
     def setUp(self):
         self.no_sign_off_field = NoisyNoSignOffField.objects.create(
@@ -204,5 +278,27 @@ class WillRaiseErrorsTest(TestCase):
         self.assertRaises( ValueError,
             setattr,
             self.sign_off_field,
+            'special_id', 1337,
+        )
+
+    def test__sign_off_field_true_at_create(self):
+        sign_off_true_at_first = NoisySignOffField.objects.create(
+            sign_off=True,
+            special_id=1,
+        )
+
+        self.assertEqual(
+            sign_off_true_at_first.special_id,
+            1,
+        )
+
+        self.assertEqual(
+            sign_off_true_at_first.sign_off,
+            True,
+        )
+
+        self.assertRaises( ValueError,
+            setattr,
+            sign_off_true_at_first,
             'special_id', 1337,
         )
