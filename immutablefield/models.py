@@ -8,9 +8,9 @@ models.options.DEFAULT_NAMES += (
 )
 
 try:
-    from django.conf.settings import IMMUTABLE_QUIET
+    from django.conf import settings
 except ImportError:
-    IMMUTABLE_QUIET = True
+    settings.IMMUTABLE_QUIET = True
 
 
 class ImmutableModel(models.Model):
@@ -26,10 +26,11 @@ class ImmutableModel(models.Model):
             'immutable_sign_off_field',
             None,
         )
+
         immutable_quiet = getattr(
             self._meta,
             'immutable_quiet',
-            IMMUTABLE_QUIET,
+            settings.IMMUTABLE_QUIET,
         )
 
         if not (isinstance(immutable, list) or immutable is None):
@@ -78,7 +79,7 @@ class ImmutableModel(models.Model):
                 current_value = None
             if current_value is not None and current_value is not '' and \
                 current_value != value:
-                if getattr(self._meta, 'immutable_quiet', IMMUTABLE_QUIET):
+                if getattr(self._meta, 'immutable_quiet', settings.IMMUTABLE_QUIET):
                     return
                 raise ValueError(
                     '%s is immutable and cannot be changed' % name)
