@@ -12,6 +12,7 @@ try:
 except ImportError:
     settings.IMMUTABLE_QUIET = True
 
+class CantDeleteImmutableException(Exception): pass
 
 class ImmutableModel(models.Model):
     def __init__(self,*args,**kwargs):
@@ -85,6 +86,17 @@ class ImmutableModel(models.Model):
                 raise ValueError(
                     '%s is immutable and cannot be changed' % name)
         super(ImmutableModel, self).__setattr__(name, value)
+
+    def delete(self):
+        if hasattr(self._meta, 'immutable_sign_off_field') and \
+            bool(getattr(self, self._meta.immutable_sign_off_field)):
+            if getattr(self._meta, 'immutable_quiet', settings.IMMUTABLE_QUIET):
+                return
+            else:
+                raise CantDeleteImmutableException(
+                    "%s is signed_off and cannot be deleted" % self
+                )
+        super(ImmutableModel, self).delete()
 
     class Meta:
         abstract = True

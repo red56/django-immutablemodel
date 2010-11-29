@@ -6,4 +6,4 @@ Copyright:
 Please see LICENSE and AUTHORS for more information.
 """
 
-from models import ImmutableModel
+from models import ImmutableModel, CantDeleteImmutableException
