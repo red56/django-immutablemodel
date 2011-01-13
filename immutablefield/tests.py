@@ -57,6 +57,22 @@ class NoisySignOffField(ImmutableModel):
         immutable_quiet = False
 
 
+class NoisyNotDeletable(ImmutableModel):
+    special_id = models.IntegerField()
+
+    class Meta:
+        immutable_quiet = False
+        immutable_is_deletable = False
+
+
+class QuietNotDeletable(ImmutableModel):
+    special_id = models.IntegerField()
+
+    class Meta:
+        immutable_quiet = True
+        immutable_is_deletable = False
+
+
 class NoMetaTest(TestCase):
     def setUp(self):
         self.obj = NoImmutable.objects.create(name='Vader')
@@ -163,7 +179,7 @@ class CanCreateModelSignOffFieldTest(TestCase):
         self.obj.save()
         self.obj.delete()
         self.assertEqual(
-            1,
+            0,
             len(SimpleSignOffField.objects.all()),
         )
 
@@ -260,10 +276,22 @@ class CanCreateModelSignOffFieldInAnyOrderTest(TestCase):
         self.obj.save()
         self.obj.delete()
         self.assertEqual(
-            1,
+            0,
             len(ComplexSignOffField.objects.all()),
         )
 
+class QuietCannotDelete(TestCase):
+    def setUp(self):
+        self.not_deletable_quiet = QuietNotDeletable.objects.create(
+            special_id=1337,
+        )
+
+    def test_no_delete(self):
+        self.not_deletable_quiet.delete()
+        self.assertEqual(
+            1,
+            len(QuietNotDeletable.objects.all()),
+        )
 
 class WillRaiseErrorsTest(TestCase):
     def setUp(self):
@@ -272,6 +300,9 @@ class WillRaiseErrorsTest(TestCase):
         )
         self.sign_off_field = NoisySignOffField.objects.create(
             special_id=5,
+        )
+        self.not_deletable_noisy = NoisyNotDeletable.objects.create(
+            special_id=1123,
         )
 
     def test__simple(self):
@@ -319,6 +350,11 @@ class WillRaiseErrorsTest(TestCase):
     def test__delete_not_signed_off(self):
         self.no_sign_off_field.delete()
         self.sign_off_field.delete()
+
+        self.assertRaises(
+            CantDeleteImmutableException,
+            self.not_deletable_noisy.delete,
+        )
         self.assertEqual(
             0,
             len(NoisyNoSignOffField.objects.all()),
@@ -331,7 +367,8 @@ class WillRaiseErrorsTest(TestCase):
     def test__delete_signed_off(self):
         self.sign_off_field.sign_off = True
         self.sign_off_field.save()
-        self.assertRaises(
-            self.sign_off_field.delete,
-            CantDeleteImmutableException,
+        self.sign_off_field.delete()
+        self.assertEqual(
+            0,
+            len(NoisySignOffField.objects.all()),
         )
