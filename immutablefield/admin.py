@@ -96,7 +96,7 @@ class ImmutableModelAdmin(admin.ModelAdmin):
 
     def has_delete_permission(self, request, obj=None):
         try:
-            return obj.immutable_is_deletable
+            return obj.immutable_is_deletable or not obj.is_signed_off()
         except AttributeError:
             #Ok if it doesn't have signofability
             return super(ImmutableModelAdmin, self).has_delete_permission(

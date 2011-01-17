@@ -169,7 +169,7 @@ class ImmutableModel(models.Model):
             return False
 
     def delete(self):
-        if not self.immutable_is_deletable:
+        if not self.immutable_is_deletable and self.is_signed_off():
             if self.immutable_quiet:
                 return
             else:
@@ -180,3 +180,4 @@ class ImmutableModel(models.Model):
 
     class Meta:
         abstract = True
+
