@@ -15,7 +15,7 @@ class ImmutableModelAdmin(admin.ModelAdmin):
             obj.save()
 
     def render_change_form(self, request, context, add=False, change=False, form_url='', obj=None):
-        if obj.is_signed_off():
+        if not obj is None and obj.is_signed_off():
             context['adminform'].form.fields['sign_off'].widget.attrs['disabled'] = True
 
         return super(ImmutableModelAdmin, self).render_change_form(
