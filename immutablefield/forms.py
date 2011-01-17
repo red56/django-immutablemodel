@@ -10,7 +10,7 @@ def signed_off_model_form_creator(cls):
             return sign_off is not None and sign_off is True
 
         def clean(self):
-            if self._wants_to_sign_off():
+            if self.data.get('_saveasnew') is None and self._wants_to_sign_off():
                 for key_error, error_msg in self.instance.obstacles_for_signoff(dict=self.cleaned_data).iteritems():
                     self._errors[key_error] = self.error_class([error_msg])
                     del self.cleaned_data[key_error]
