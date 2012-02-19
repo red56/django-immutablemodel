@@ -1,9 +1,8 @@
 from django.db import models
 from immutablefield import ImmutableModel, CantDeleteImmutableException
 
-class NoImmutable(ImmutableModel):
+class NoMeta(ImmutableModel):
     name = models.CharField(max_length=50)
-
 
 class SimpleNoSignOffField(ImmutableModel):
     special_id = models.IntegerField()

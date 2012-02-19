@@ -8,28 +8,28 @@ from testapp.models import *
     Test Classes
 """
 
-class NoMetaTest(TestCase):
+class Case01_NoMetaTest(TestCase):
     def setUp(self):
-        self.obj = NoImmutable.objects.create(name='Vader')
+        self.obj = NoMeta.objects.create(name='Vader')
 
     def test__simple(self):
-        self.assertTrue(self.obj.name, 'Vader')
+        self.assertEqual(self.obj.name, 'Vader')
         self.obj.name = 'Anakin'
         self.obj.save()
 
-        db_object = NoImmutable.objects.all()[0]
-        self.assertTrue(self.obj.name, 'Anakin')
-        self.assertTrue(db_object.name, 'Anakin')
+        db_object = NoMeta.objects.all()[0]
+        self.assertEqual(self.obj.name, 'Anakin')
+        self.assertEqual(db_object.name, 'Anakin')
 
     def test__delete(self):
         self.obj.delete()
         self.assertEqual(
             0,
-            len(NoImmutable.objects.all()),
+            len(NoMeta.objects.all()),
         )
 
 
-class CanCreateModelNoSignOffFieldTest(TestCase):
+class Case02_CanCreateModelNoSignOffFieldTest(TestCase):
     def setUp(self):
         self.obj = SimpleNoSignOffField.objects.create(
             special_id=1,
@@ -37,8 +37,8 @@ class CanCreateModelNoSignOffFieldTest(TestCase):
         )
 
     def test__simple(self):
-        self.assertTrue(self.obj.special_id, 1)
-        self.assertTrue(self.obj.name, 'Vader')
+        self.assertEqual(self.obj.special_id, 1)
+        self.assertEqual(self.obj.name, 'Vader')
 
         self.obj.special_id = 1000
         self.obj.name = 'Luke'
@@ -47,10 +47,10 @@ class CanCreateModelNoSignOffFieldTest(TestCase):
 
         db_object = SimpleNoSignOffField.objects.all()[0]
         # Should stay the same, it's immutable. Except the name.
-        self.assertTrue(self.obj.special_id, 1)
-        self.assertTrue(self.obj.name, 'JarJarBinks')
-        self.assertTrue(db_object.special_id, 1)
-        self.assertTrue(db_object.name, 'JarJarBinks')
+        self.assertEqual(self.obj.special_id, 1)
+        self.assertEqual(self.obj.name, 'Luke')
+        self.assertEqual(db_object.special_id, 1)
+        self.assertEqual(db_object.name, 'Luke')
 
     def test__delete(self):
         self.obj.delete()
@@ -59,7 +59,7 @@ class CanCreateModelNoSignOffFieldTest(TestCase):
             len(SimpleNoSignOffField.objects.all()),
         )
 
-class CanCreateModelSignOffFieldTest(TestCase):
+class Case03_CanCreateModelSignOffFieldTest(TestCase):
     def setUp(self):
         self.obj = SimpleSignOffField.objects.create(
             special_id=1,
@@ -68,8 +68,8 @@ class CanCreateModelSignOffFieldTest(TestCase):
         )
 
     def test__simple_not_signed_off(self):
-        self.assertTrue(self.obj.special_id, 1)
-        self.assertTrue(self.obj.name, 'Yoda')
+        self.assertEqual(self.obj.special_id, 1)
+        self.assertEqual(self.obj.name, 'Yoda')
 
         self.obj.special_id = 1337
         self.obj.name = 'Obi-Wan'
@@ -78,10 +78,10 @@ class CanCreateModelSignOffFieldTest(TestCase):
         db_object = SimpleSignOffField.objects.all()[0]
 
         # Should change, since the signed-off field is false
-        self.assertTrue(self.obj.special_id, 1337)
-        self.assertTrue(self.obj.name, 'Obi-Wan')
-        self.assertTrue(db_object.special_id, 1337)
-        self.assertTrue(db_object.name, 'Obi-Wan')
+        self.assertEqual(self.obj.special_id, 1337)
+        self.assertEqual(self.obj.name, 'Obi-Wan')
+        self.assertEqual(db_object.special_id, 1337)
+        self.assertEqual(db_object.name, 'Obi-Wan')
 
     def test__simple_signed_off(self):
         self.obj.sign_off = True
@@ -95,12 +95,12 @@ class CanCreateModelSignOffFieldTest(TestCase):
 
         # Should not change, since the signed-off field is true
         # Of course, that name is still changable
-        self.assertTrue(self.obj.special_id, 1)
-        self.assertTrue(self.obj.name, 'Obi-Wan')
-        self.assertTrue(self.obj.sign_off, True)
-        self.assertTrue(db_object.special_id, 1)
-        self.assertTrue(db_object.name, 'Obi-Wan')
-        self.assertTrue(db_object.sign_off, True)
+        self.assertEqual(self.obj.special_id, 1)
+        self.assertEqual(self.obj.name, 'Obi-Wan')
+        self.assertEqual(self.obj.sign_off, True)
+        self.assertEqual(db_object.special_id, 1)
+        self.assertEqual(db_object.name, 'Obi-Wan')
+        self.assertEqual(db_object.sign_off, True)
 
     def test__delete_not_signed_off(self):
         self.obj.delete()
@@ -119,7 +119,7 @@ class CanCreateModelSignOffFieldTest(TestCase):
         )
 
 
-class CanCreateModelSignOffFieldInAnyOrderTest(TestCase):
+class Case04_CanCreateModelSignOffFieldInAnyOrderTest(TestCase):
     def setUp(self):
         self.obj = ComplexSignOffField.objects.create(
             sign_off=False,
@@ -128,8 +128,8 @@ class CanCreateModelSignOffFieldInAnyOrderTest(TestCase):
         )
 
     def test__simple_not_signed_off(self):
-        self.assertTrue(self.obj.special_id, 1)
-        self.assertTrue(self.obj.name, 'Yoda')
+        self.assertEqual(self.obj.special_id, 1)
+        self.assertEqual(self.obj.name, 'Yoda')
 
         self.obj.special_id = 1337
         self.obj.name = 'Obi-Wan'
@@ -138,10 +138,10 @@ class CanCreateModelSignOffFieldInAnyOrderTest(TestCase):
         db_object = ComplexSignOffField.objects.all()[0]
 
         # Should change, since the signed-off field is false
-        self.assertTrue(self.obj.special_id, 1337)
-        self.assertTrue(self.obj.name, 'Obi-Wan')
-        self.assertTrue(db_object.special_id, 1337)
-        self.assertTrue(db_object.name, 'Obi-Wan')
+        self.assertEqual(self.obj.special_id, 1337)
+        self.assertEqual(self.obj.name, 'Obi-Wan')
+        self.assertEqual(db_object.special_id, 1337)
+        self.assertEqual(db_object.name, 'Obi-Wan')
 
     def test__simple_signed_off(self):
         self.obj.sign_off = True
@@ -155,12 +155,12 @@ class CanCreateModelSignOffFieldInAnyOrderTest(TestCase):
 
         # Should not change, since the signed-off field is true
         # Of course, that name is still changable
-        self.assertTrue(self.obj.special_id, 1)
-        self.assertTrue(self.obj.name, 'Obi-Wan')
-        self.assertTrue(self.obj.sign_off, True)
-        self.assertTrue(db_object.special_id, 1)
-        self.assertTrue(db_object.name, 'Obi-Wan')
-        self.assertTrue(db_object.sign_off, True)
+        self.assertEqual(self.obj.special_id, 1)
+        self.assertEqual(self.obj.name, 'Obi-Wan')
+        self.assertEqual(self.obj.sign_off, True)
+        self.assertEqual(db_object.special_id, 1)
+        self.assertEqual(db_object.name, 'Obi-Wan')
+        self.assertEqual(db_object.sign_off, True)
 
     def test__sign_off_field_true_at_create(self):
         sign_off_true_at_first = ComplexSignOffField.objects.create(
@@ -192,12 +192,12 @@ class CanCreateModelSignOffFieldInAnyOrderTest(TestCase):
 
         # Should not change, since the signed-off field is true
         # Of course, that name is still changable
-        self.assertTrue(sign_off_true_at_first.special_id, 100)
-        self.assertTrue(sign_off_true_at_first.name, 'Obi-Wan')
-        self.assertTrue(sign_off_true_at_first.sign_off, True)
-        self.assertTrue(db_object.special_id, 100)
-        self.assertTrue(db_object.name, 'Obi-Wan')
-        self.assertTrue(db_object.sign_off, True)
+        self.assertEqual(sign_off_true_at_first.special_id, 100)
+        self.assertEqual(sign_off_true_at_first.name, 'Obi-Wan')
+        self.assertEqual(sign_off_true_at_first.sign_off, True)
+        self.assertEqual(db_object.special_id, 100)
+        self.assertEqual(db_object.name, 'Obi-Wan')
+        self.assertEqual(db_object.sign_off, True)
 
     def test__delete_not_signed_off(self):
         self.obj.delete()
@@ -215,7 +215,7 @@ class CanCreateModelSignOffFieldInAnyOrderTest(TestCase):
             len(ComplexSignOffField.objects.all()),
         )
 
-class QuietCannotDelete(TestCase):
+class Case05_QuietCannotDelete(TestCase):
     def setUp(self):
         self.not_deletable_quiet = QuietNotDeletable.objects.create(
             special_id=1337,
@@ -228,7 +228,7 @@ class QuietCannotDelete(TestCase):
             len(QuietNotDeletable.objects.all()),
         )
 
-class WillRaiseErrorsTest(TestCase):
+class Case06_WillRaiseErrorsTest(TestCase):
     def setUp(self):
         self.no_sign_off_field = NoisyNoSignOffField.objects.create(
             special_id=1,
@@ -241,8 +241,8 @@ class WillRaiseErrorsTest(TestCase):
         )
 
     def test__simple(self):
-        self.assertTrue(self.no_sign_off_field.special_id, 1)
-        self.assertTrue(self.sign_off_field.special_id, 5)
+        self.assertEqual(self.no_sign_off_field.special_id, 1)
+        self.assertEqual(self.sign_off_field.special_id, 5)
 
         self.assertRaises( ValueError,
             setattr,
