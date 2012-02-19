@@ -88,6 +88,9 @@ called.
     >>> queen_anne.name = 'King George'
     ValueError: name is immutable and cannot be changed
 
+If you want you can make ALL immutable fields complain by adding
+``IMMUTABLE_QUIET=True`` to your settings.py
+
 
 You can make some fields mutable
 --------------------------------
@@ -139,4 +142,11 @@ Reference
                 immutable = ['my_special_id']
                 quiet = False
 
-#TODO: Need to document skandal's signoff_field (rename to lock_field)
+**settings.py**
+
+    ``IMMUTABLE_QUIET``
+
+        Set this to ``True`` to make all immutable_fields raise an Exception when attempting
+        to be changed.
+
+*#TODO: Need to document skandal's signoff_field (rename to lock_field)*
