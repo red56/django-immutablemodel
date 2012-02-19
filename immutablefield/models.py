@@ -2,7 +2,8 @@
 from django.db import models
 from django.core.exceptions import ImproperlyConfigured
 
-models.options.DEFAULT_NAMES += (
+#models.options.DEFAULT_NAMES += (
+IMMUTABLEFIELD_OPTIONS =(
     'immutable',
     'immutable_sign_off_field',
     'immutable_quiet',
@@ -19,7 +20,34 @@ except AttributeError:
 
 class CantDeleteImmutableException(Exception): pass
 
+class _Undefined: pass
+
+
+class ImmutableModelMeta(models.base.ModelBase):
+    def __new__(cls, name, bases, attrs):
+        immutability_options = ImmutableModelMeta.extract_options(attrs.get('Meta', None))
+        registered_model = models.base.ModelBase.__new__(cls, name, bases, attrs)
+        ImmutableModelMeta.reinject_options(immutability_options, registered_model)
+        return registered_model
+
+    @staticmethod
+    def extract_options(meta):
+        if not meta: return {}
+        immutability_options = {}
+        for opt_name in IMMUTABLEFIELD_OPTIONS:
+            value = getattr(meta, opt_name, _Undefined)
+            if value is not _Undefined:
+                delattr(meta, opt_name)
+                immutability_options[opt_name] = value
+        return immutability_options
+    
+    @staticmethod
+    def reinject_options(immutability_options, registered_model):
+        for opt_name, value in immutability_options.iteritems():
+            setattr(registered_model._meta, opt_name, value)
+
 class ImmutableModel(models.Model):
+    __metaclass__ = ImmutableModelMeta
     def __init__(self,*args,**kwargs):
         super(ImmutableModel, self).__init__(*args,**kwargs)
 
