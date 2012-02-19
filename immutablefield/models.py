@@ -10,10 +10,12 @@ models.options.DEFAULT_NAMES += (
     'immutable_cascade_signoff',
 )
 
+from django.conf import settings
+
 try:
-    from django.conf import settings
-except ImportError:
-    settings.IMMUTABLE_QUIET = True
+    IMMUTABLE_QUIET_DEFAULT = settings.IMMUTABLE_QUIET
+except AttributeError:
+    IMMUTABLE_QUIET_DEFAULT = True
 
 class CantDeleteImmutableException(Exception): pass
 
@@ -63,7 +65,7 @@ class ImmutableModel(models.Model):
         return getattr(
             self._meta,
             'immutable_quiet',
-            settings.IMMUTABLE_QUIET,
+            IMMUTABLE_QUIET_DEFAULT,
         )
 
     @property
