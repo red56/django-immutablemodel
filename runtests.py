@@ -11,13 +11,13 @@ os.environ['PYTHONPATH'] = os.pathsep.join([
     
 
 def django(django_cmd):
-    cmd = "django-admin.py %s" % django_cmd
+    cmd = "django-admin.py %s --settings=test_settings" % django_cmd
     print cmd
     return subprocess.call([cmd], shell=True, cwd=ROOT)
     
 def test(failfast=False):
-    django('syncdb  --noinput --verbosty=0')
-    cmd = 'test --settings=test_settings'
+    django('syncdb  --noinput --verbosity=0')
+    cmd = 'test'
     if failfast:
         cmd += " --failfast"
     django(cmd)
