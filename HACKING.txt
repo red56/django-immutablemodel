@@ -1,13 +1,32 @@
-Development setup
-=================
+Development/testing setup
+=========================
 
-To create a buildout,
+Get it from github::
 
-  $ python bootstrap.py
-  $ bin/buildout
+  $ git clone git://github.com/red56/django-immutablemodel.git #or your fork...
+  $ cd django-immutablemodel
+
+Set up git flow::
+
+  $ git flow init -d
+
+Create and activate a virtualenv::
+
+  $ virtualenv -p python2.5 --no-site-packages SOMEWHERE
+  $ source SOMEWHERE/bin/activate
+
+Install dependencies for development, using virtualenv's pip::
+
+  $ pip install -r requirements.txt
+
+Run the tests::
+
+  $ python runtests.py
+
 
 Release HOWTO
 =============
+*#TODO: review this...*
 
 To make a release, 
 
