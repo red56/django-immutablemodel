@@ -8,7 +8,6 @@ IMMUTABLEFIELD_OPTIONS =(
     'immutable_sign_off_field',
     'immutable_quiet',
     'immutable_is_deletable',
-    'immutable_cascade_signoff',
 )
 
 from django.conf import settings
@@ -68,10 +67,6 @@ class ImmutableModel(models.Model):
             raise TypeError('immutable_is_deletable attribute in ImmutableMeta must '
                             'be boolean')
 
-        if not isinstance(self.immutable_cascade_signoff, bool):
-            raise TypeError('immutable_cascade_signoff attribute in ImmutableMeta must '
-                            'be boolean')
-
     @property
     def immutable(self):
         return getattr(
@@ -104,14 +99,6 @@ class ImmutableModel(models.Model):
             True,
         )
 
-    @property
-    def immutable_cascade_signoff(self):
-        return getattr(
-            self._meta,
-            'immutable_cascade_signoff',
-            False,
-        )
-
     def can_change_field(self, field_name):
         return field_name not in self.immutable or not self.is_signed_off()
 
@@ -133,43 +120,8 @@ class ImmutableModel(models.Model):
         return u'In order to sign off, %s needs to be Signed Off' % (str(self),)
 
     def obstacles_for_signoff(self, dict=None):
-        class Struct:
-            def __init__(self, **entries):
-                self.__dict__.update(entries)
-
         if self.has_sign_off_field():
             errors = {}
-            if self._meta.immutable_cascade_signoff:
-                if dict is not None:
-                    instance = Struct(**dict)
-                else:
-                    instance = self
-
-                relation_fields = [
-                    (f.name, getattr(instance, f.name),) for f in self._meta.fields
-                    if isinstance(f, (models.ForeignKey,)) and
-                    not f.name.endswith('_ptr') and
-                    self.field_has_sign_off_field(
-                        getattr(instance, f.name, None),
-                    )
-                ]
-
-                many_to_many_fields = [
-                    f for f in self._meta.many_to_many
-                    if isinstance(f, (models.ManyToManyField,)) and
-                    not f.name.endswith('_ptr')
-                ]
-
-                fields_to_validate = relation_fields + [
-                    (f.name, m2m,)
-                    for m2m in getattr(instance, f.name, None)
-                    if self.field_has_sign_off_field(m2m)
-                    for f in many_to_many_fields
-                ]
-
-                for field_name, field in fields_to_validate:
-                    if not field.is_signed_off():
-                        errors[field_name] = field._not_signed_off_error()
             return errors
         else:
             raise ImproperlyConfigured(
