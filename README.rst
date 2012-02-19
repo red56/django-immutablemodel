@@ -1,8 +1,20 @@
+=====================
 django-immutablefield
 =====================
+Easily make all of a django model's fields immutable after saving.
+You can customize it to make some fields mutable.
+You can change when it can be mutable 
+(e.g. whenever the field's value is nil, or only when a particular 'lock field' is false)
 
-Inspired by a Google search that didn't turn up reusable solution for making
-fields immutable inside of a Django model.
+History and credits
+-------------------
+Very heavily based on Rob Madole's original code at https://bitbucket.org/robmadole/django-immutablefield and 
+Helder Silvea's fork at https://bitbucket.org/skandal/django-immutablefield.
+Rob's was 'inspired by a Google search that didn't turn up reusable solution for making
+fields immutable inside of a Django model'.
+
+*Pulled across from hg/bitbucket to git/github because less headache as they are more familar to me (Tim)*
+
 
 Installing
 ----------
@@ -11,43 +23,39 @@ One of the following:
 
 Via the ole' standby::
 
-    easy_install django-immutablefield
+    easy_install django-immutablemodel
 
 Pip::
 
-    pip install django-immutablefield
+    pip install django-immutablemodel
 
-To install directly from Bitbucket::
+To install directly from Github::
 
-    pip install -e hg+http://bitbucket.org/robmadole/django-immutablefield#egg=django-immutablefield
+    pip install git+https://github.com/red56/django-immutablemodel
 
 .. hint:: You **do not** need to add anything into Django's ``INSTALLED_APPS``
 
 What does it do
 ---------------
 
-Allows you to define certain fields as immutable inside of Django models.
+Allows you to declare a Django model as immutable.
 
 It works as a drop-in replacement for Django's own ``Model``.  This means you
-can ``ImmutableModel`` even if you don't specify ``ImmutableMeta``.
+can ``ImmutableModel``.
 
 ::
 
     from django.db import models
 
-    from immutablefield.models import ImmutableModel
+    from immutablemodel.models import ImmutableModel
 
     CruiseShip(ImmutableModel):
         name = models.CharField(max_length=50)
-
-        class ImmutableMeta:
-            # After ya name a ship, you can't change it matey
-            immutable = ['name']
-
-        def __unicode__(self):
-            return u'%s' % self.name
-
-Now you can try with all your might, but the field won't change (within reason,
+     
+        class Meta:
+            mutable_fields = [] # you can actually leave this out...
+			
+Now you can try with all your might, but once you've saved it won't change (within reason,
 sure this is Python we can do almost anything if we try hard enough)
 
 ::
@@ -66,9 +74,8 @@ Change the meta section to include ``quiet = False`` and it will raise a
 
 ::
 
-    class ImmutableMeta:
-        # After ya name a ship, you can't change it matey
-        immutable = ['name']
+    class Meta:
+        mutable_fields = [] # you can actually leave this out...
         quiet = False
 
 The error is raised as soon as you try and set the field, not when ``save()`` is
@@ -81,22 +88,39 @@ called.
     >>> queen_anne.name = 'King George'
     ValueError: name is immutable and cannot be changed
 
+
+You can make some fields mutable
+--------------------------------
+
+List the fields you actually want mutable in "mutable_fields"
+
+::
+
+    CruiseShip(ImmutableModel):
+        name = models.CharField(max_length=50)
+		passengers = models.PositiveIntegerField()
+		
+        class Meta:
+             mutable_fields = ['passengers'] 
+
+
 Reference
 ---------
 
-**ImmutableMeta**
+**Meta**
 
-    Specify options that control how immutable fields are handled when
+    Specify options (in addition to the normal django model's Meta options) that 
+    control how immutable fields are handled when
     subclassing the ``ImmutableModel`` class
 
-    ``immutable``
+    ``mutable_fields``
 
-        Tell ``ImmutableModel`` which fields should not be allowed to change.
+        Tell ``ImmutableModel`` which fields should be allowed to change.
         This value must be a tuple or a list and contain the names of the fields
         as strings.::
 
-            class ImmutableMeta:
-                immutable = ['my_special_id']
+            class Meta:
+                immutable_fields = ['my_special_id']
 
         Specify multiple fields::
 
@@ -114,3 +138,5 @@ Reference
             class ImmutableMeta:
                 immutable = ['my_special_id']
                 quiet = False
+
+#TODO: Need to document skandal's signoff_field (rename to lock_field)
