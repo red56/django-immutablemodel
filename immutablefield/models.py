@@ -26,6 +26,7 @@ class ImmutableModelMeta(models.base.ModelBase):
         immutability_options = ImmutableModelMeta.extract_options(attrs.get('Meta', {}))
         registered_model = models.base.ModelBase.__new__(cls, name, bases, attrs)
         ImmutableModelMeta.reinject_options(immutability_options, registered_model)
+        ImmutableModelMeta.check_options(registered_model)
         return registered_model
 
     @staticmethod
@@ -47,27 +48,27 @@ class ImmutableModelMeta(models.base.ModelBase):
             if value is not _Undefined:
                 setattr(registered_model._meta, opt_name, value)
 
-class ImmutableModel(models.Model):
-    __metaclass__ = ImmutableModelMeta
-    def __init__(self,*args,**kwargs):
-        super(ImmutableModel, self).__init__(*args,**kwargs)
-
-        if not isinstance(self._meta.immutable, list):
-            raise TypeError('immutable attribute in ImmutableMeta must be '
+    @staticmethod
+    def check_options(model):
+        if not isinstance(model._meta.immutable, list):
+            raise TypeError('immutable attribute in must be '
                             'a list')
 
-        if not (isinstance(self._meta.immutable_sign_off_field, basestring) or \
-            self._meta.immutable_sign_off_field is None):
+        if not (isinstance(model._meta.immutable_sign_off_field, basestring) or \
+            model._meta.immutable_sign_off_field is None):
             raise TypeError('immutable_sign_off_field attribute in '
                             'ImmutableMeta must be a string')
 
-        if not isinstance(self._meta.immutable_quiet, bool):
+        if not isinstance(model._meta.immutable_quiet, bool):
             raise TypeError('immutable_quiet attribute in ImmutableMeta must '
                             'be boolean')
 
-        if not isinstance(self._meta.immutable_is_deletable, bool):
+        if not isinstance(model._meta.immutable_is_deletable, bool):
             raise TypeError('immutable_is_deletable attribute in ImmutableMeta must '
                             'be boolean')
+            
+class ImmutableModel(models.Model):
+    __metaclass__ = ImmutableModelMeta
 
     def can_change_field(self, field_name):
         return field_name not in self._meta.immutable or not self.is_signed_off()
