@@ -35,7 +35,7 @@ IMMUTABLEFIELD_OPTIONS = dict([(opt.name, opt) for opt in (
     FieldsOption('mutable_fields'),
     FieldsOption('immutable_fields'),
     QuietOption('immutable_quiet'),
-    Option('immutable_sign_off_field', default=PK_FIELD),
+    Option('immutable_lock_field', default=PK_FIELD),
     Option('immutable_is_deletable', default=True),
     )])
     
@@ -91,14 +91,14 @@ class ImmutableModelMeta(models.base.ModelBase):
         # we don't need the list of immutable_fields anymore -- only used for specifying
         del model._meta.immutable_fields
         
-        if model._meta.immutable_sign_off_field is PK_FIELD:
-            model._meta.immutable_sign_off_field = model._meta.pk.name
-        elif (isinstance(model._meta.immutable_sign_off_field, basestring) or 
-            model._meta.immutable_sign_off_field is None
+        if model._meta.immutable_lock_field is PK_FIELD:
+            model._meta.immutable_lock_field = model._meta.pk.name
+        elif (isinstance(model._meta.immutable_lock_field, basestring) or 
+            model._meta.immutable_lock_field is None
             ):
             pass
         else:
-            raise TypeError('immutable_sign_off_field attribute in '
+            raise TypeError('immutable_lock_field attribute in '
                             '%s must be a string (or None, or omitted)' % model)
         
         
@@ -114,7 +114,7 @@ class ImmutableModel(models.Model):
     __metaclass__ = ImmutableModelMeta
 
     def can_change_field(self, field_name):
-        return field_name in self._meta.mutable_fields or not self.is_signed_off()
+        return field_name in self._meta.mutable_fields or not self.is_immutable()
 
     def __setattr__(self, name, value):
         if not self.can_change_field(name):
@@ -130,47 +130,35 @@ class ImmutableModel(models.Model):
                 raise ValueError('%s is immutable and cannot be changed' % name)
         super(ImmutableModel, self).__setattr__(name, value)
 
-    def _not_signed_off_error(self):
-        return u'In order to sign off, %s needs to be Signed Off' % (str(self),)
-
-    def obstacles_for_signoff(self, dict=None):
-        if self.has_sign_off_field():
-            errors = {}
-            return errors
-        else:
-            raise ImproperlyConfigured(
-                u"Can't check signoffbility of a model without a signoff field."
-            )
-
-    def is_signed_off(self):
-        if self.has_sign_off_field():
+    def is_immutable(self):
+        if self.has_immutable_lock_field():
             """
             During the creation of a Django ORM object, as far as we know,
             the object starts with no fields and they are added after the object
             creation. This leads to an object with some fields created and some
             fields to create.
-            In the presence of a sign_off field decision,
+            In the presence of a immutable_lock field decision,
             if the field does not exists, it can be changed.
             """
-            return getattr(self, self._meta.immutable_sign_off_field, True)
+            return getattr(self, self._meta.immutable_lock_field, True)
         return True
 
-    def has_sign_off_field(self):
-        return self._meta.immutable_sign_off_field != None
+    def has_immutable_lock_field(self):
+        return self._meta.immutable_lock_field != None
 
-    def field_has_sign_off_field(self, field):
+    def field_has_immutable_lock_field(self, field):
         if hasattr(field, '_meta'):
-            return hasattr(field._meta, 'immutable_sign_off_field')
+            return hasattr(field._meta, 'immutable_lock_field')
         else:
             return False
 
     def delete(self):
-        if not self._meta.immutable_is_deletable and self.is_signed_off():
+        if not self._meta.immutable_is_deletable and self.is_immutable():
             if self._meta.immutable_quiet:
                 return
             else:
                 raise CantDeleteImmutableException(
-                    "%s is signed_off and cannot be deleted" % self
+                    "%s is immutable and cannot be deleted" % self
                 )
         super(ImmutableModel, self).delete()
 

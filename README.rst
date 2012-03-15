@@ -156,7 +156,7 @@ Reference
             class ImmutableMeta:
                 immutable_quiet = False
 
-    ``immutable_signoff_field``
+    ``immutable_lock_field``
 
         This determines when to enforce immutability. By default it is equal to immutable_model.models.PK_FIELD.
         This means that when the PK_FIELD is full (typically when saved) the model is immutable, but before it is
@@ -165,7 +165,7 @@ Reference
         immutable fields once they are set (even before saving).
 
             class ImmutableMeta:
-                immutable_signoff_field = ['is_locked']
+                immutable_lock_field = ['is_locked']
 
 
 **settings.py**
@@ -175,4 +175,3 @@ Reference
         Set this to ``False`` to make all immutable_fields raise an Exception when attempting
         to be changed.
 
-*#TODO: Need to document skandal's signoff_field (rename to lock_field)*
