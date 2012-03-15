@@ -2,6 +2,36 @@
 from django.contrib import admin
 
 class ImmutableModelAdmin(admin.ModelAdmin):
+    def get_readonly_fields(self, request, obj=None):
+        # Override super class method, in order to achieve readonly fields, at
+        # signed-off entities forms
+        def reload_obj():
+            return obj.__class__.objects.get(pk=obj.pk)
+
+        if not obj is None:
+            # We'r chaging the obj
+            try:
+                signed_off_field_name = obj._meta.immutable_lock_field
+            except AttributeError:
+                return self.readonly_fields
+            else:
+                if not getattr(reload_obj(), signed_off_field_name, False):
+                    return self.readonly_fields + tuple([signed_off_field_name])
+            return self.readonly_fields + tuple(obj._meta.immutable)
+        else:
+            return self.readonly_fields
+
+    def has_delete_permission(self, request, obj=None):
+        try:
+            return obj.immutable_is_deletable or not obj.is_immutable()
+        except AttributeError:
+            #Ok if it doesn't have signofability
+            return super(ImmutableModelAdmin, self).has_delete_permission(
+                request,
+                obj,
+            )
+
+class ComplexImmutableModelAdmin(ImmutableModelAdmin):
     save_as = True
     fields = ('immutable_lock',)
 
@@ -18,7 +48,7 @@ class ImmutableModelAdmin(admin.ModelAdmin):
         if not obj is None and obj.is_immutable():
             context['adminform'].form.fields['immutable_lock'].widget.attrs['disabled'] = True
 
-        return super(ImmutableModelAdmin, self).render_change_form(
+        return super(ComplexImmutableModelAdmin, self).render_change_form(
             request,
             context,
             add,
@@ -69,49 +99,21 @@ class ImmutableModelAdmin(admin.ModelAdmin):
 
             return self.add_view(request, form_url='../add/')
 
-        return super(ImmutableModelAdmin, self).change_view(
+        return super(ComplexImmutableModelAdmin, self).change_view(
             request,
             object_id,
             extra_context,
         )
 
-    def get_readonly_fields(self, request, obj=None):
-        # Override super class method, in order to achieve readonly fields, at
-        # signed-off entities forms
-        def reload_obj():
-            return obj.__class__.objects.get(pk=obj.pk)
-
-        if not obj is None:
-            # We'r chaging the obj
-            try:
-                signed_off_field_name = obj._meta.immutable_lock_field
-            except AttributeError:
-                return self.readonly_fields
-            else:
-                if not getattr(reload_obj(), signed_off_field_name, False):
-                    return self.readonly_fields + tuple([signed_off_field_name])
-            return self.readonly_fields + tuple(obj._meta.immutable)
-        else:
-            return self.readonly_fields
-
-    def has_delete_permission(self, request, obj=None):
-        try:
-            return obj.immutable_is_deletable or not obj.is_immutable()
-        except AttributeError:
-            #Ok if it doesn't have signofability
-            return super(ImmutableModelAdmin, self).has_delete_permission(
-                request,
-                obj,
-            )
 
     def response_change(self, request, obj):
-        response = super(ImmutableModelAdmin, self).response_change(request,obj)
+        response = super(ComplexImmutableModelAdmin, self).response_change(request,obj)
         self._validate_and_check_immutable_immutable_lock_request(request, obj)
 
         return response
 
     def response_add(self, request, obj):
-        response = super(ImmutableModelAdmin, self).response_add(request,obj)
+        response = super(ComplexImmutableModelAdmin, self).response_add(request,obj)
         self._validate_and_check_immutable_immutable_lock_request(request, obj)
 
         return response
