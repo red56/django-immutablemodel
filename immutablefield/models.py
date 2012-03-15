@@ -2,19 +2,35 @@
 from django.db import models
 from django.core.exceptions import ImproperlyConfigured
 
-from django.conf import settings
 
-try:
-    IMMUTABLE_QUIET_DEFAULT = settings.IMMUTABLE_QUIET
-except AttributeError:
-    IMMUTABLE_QUIET_DEFAULT = True
+class Option(object):
+    def __init__(self, name, default=None):
+        self.name = name
+        self.default = default
+        
+    def get_default_for(self, model_class):
+        return self.default
 
-IMMUTABLEFIELD_OPTIONS_DEFAULTS = {
-    'immutable': [],
-    'immutable_sign_off_field': None,
-    'immutable_quiet': IMMUTABLE_QUIET_DEFAULT,
-    'immutable_is_deletable': True,
-}
+class QuietOption(Option):
+    def get_default_for(self, model_class):
+        from django.conf import settings
+        try:
+            IMMUTABLE_QUIET_DEFAULT = settings.IMMUTABLE_QUIET
+        except AttributeError:
+            IMMUTABLE_QUIET_DEFAULT = True
+        return IMMUTABLE_QUIET_DEFAULT
+
+class FieldsOption(Option):
+    def get_default_for(self, model_class):
+        return []
+    
+IMMUTABLEFIELD_OPTIONS = dict([(opt.name, opt) for opt in (
+    FieldsOption('immutable'),
+    QuietOption('immutable_quiet'),
+    Option('immutable_sign_off_field'),
+    Option('immutable_is_deletable', default=True),
+    )])
+    
 
 class CantDeleteImmutableException(Exception): pass
 
@@ -23,6 +39,12 @@ class _Undefined: pass
 
 class ImmutableModelMeta(models.base.ModelBase):
     def __new__(cls, name, bases, attrs):
+        super_new = super(ImmutableModelMeta, cls).__new__
+        parents = [b for b in bases if isinstance(b, ImmutableModelMeta)]
+        if not parents:
+            # If this isn't a **sub**class of ImmutableMeta (ie. probably ImmutableModel itself), don't do anything special.
+            return super_new(cls, name, bases, attrs)
+
         immutability_options = ImmutableModelMeta.extract_options(attrs.get('Meta', {}))
         registered_model = models.base.ModelBase.__new__(cls, name, bases, attrs)
         ImmutableModelMeta.reinject_options(immutability_options, registered_model)
@@ -32,7 +54,7 @@ class ImmutableModelMeta(models.base.ModelBase):
     @staticmethod
     def extract_options(meta):
         immutability_options = {}
-        for opt_name in IMMUTABLEFIELD_OPTIONS_DEFAULTS.iterkeys():
+        for opt_name in IMMUTABLEFIELD_OPTIONS:
             value = getattr(meta, opt_name, _Undefined)
             if value is not _Undefined:
                 delattr(meta, opt_name)
@@ -44,7 +66,7 @@ class ImmutableModelMeta(models.base.ModelBase):
         for opt_name, value in immutability_options.iteritems():
             if value is _Undefined and getattr(registered_model._meta, opt_name, _Undefined) is _Undefined:
                 #only want to use default when registered_model doesn't have a value yet 
-                value = IMMUTABLEFIELD_OPTIONS_DEFAULTS[opt_name]
+                value = IMMUTABLEFIELD_OPTIONS[opt_name].get_default_for(registered_model)
             if value is not _Undefined:
                 setattr(registered_model._meta, opt_name, value)
 
@@ -57,10 +79,10 @@ class ImmutableModelMeta(models.base.ModelBase):
         if not (isinstance(model._meta.immutable_sign_off_field, basestring) or \
             model._meta.immutable_sign_off_field is None):
             raise TypeError('immutable_sign_off_field attribute in '
-                            'ImmutableMeta must be a string')
+                            'Immutable must be a string')
 
         if not isinstance(model._meta.immutable_quiet, bool):
-            raise TypeError('immutable_quiet attribute in ImmutableMeta must '
+            raise TypeError('immutable_quiet attribute must '
                             'be boolean')
 
         if not isinstance(model._meta.immutable_is_deletable, bool):
