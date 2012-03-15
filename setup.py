@@ -8,11 +8,11 @@ NEWS = open(os.path.join(here, 'NEWS.txt')).read()
 
 setup(
     name = 'django-immutablemodel',
-    version = '0.2',
+    version = '0.3',
     description="A base class for Django to allow immutable fields on Models",
     long_description=README + '\n\n' + NEWS,
     classifiers=[
-        'Development Status :: 3 - Alpha',
+        'Development Status :: 4 - Beta',
         'Framework :: Django',
         'Intended Audience :: Developers',
         'License :: OSI Approved :: BSD License',

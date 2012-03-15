@@ -31,8 +31,7 @@ To make a release,
 
   1) git flow release start VERSIONNUMBER
   2) Update release date/version (VERSIONNUMBER) in NEWS.txt and setup.py
-  3) git flow release finish VERSIONNUMBER && git push && git push --tags 
-  4) Run 'python setup.py sdist'
-  5) Test the generated source distribution in dist/
-  6) Upload to PyPI: 'python setup.py sdist register upload'
-  7) Increase version in setup.py (for next release -- with dev addition)
+  3) Run 'python setup.py sdist'
+  4) git flow release finish VERSIONNUMBER && git push && git push --tags 
+  5) Upload to PyPI: 'python setup.py sdist register upload'
+  6) Increase version in setup.py (for next release -- with dev addition)
