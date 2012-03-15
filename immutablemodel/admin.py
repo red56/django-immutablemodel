@@ -22,14 +22,12 @@ class ImmutableModelAdmin(admin.ModelAdmin):
             return self.readonly_fields
 
     def has_delete_permission(self, request, obj=None):
-        try:
-            return obj.immutable_is_deletable or not obj.is_immutable()
-        except AttributeError:
-            #Ok if it doesn't have signofability
-            return super(ImmutableModelAdmin, self).has_delete_permission(
-                request,
-                obj,
-            )
+        if not obj.immutable_is_deletable and obj.is_immutable():
+            return False
+        return super(ImmutableModelAdmin, self).has_delete_permission(
+            request,
+            obj,
+        )
 
 class ComplexImmutableModelAdmin(ImmutableModelAdmin):
     save_as = True
