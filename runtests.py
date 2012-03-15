@@ -11,7 +11,8 @@ os.environ['PYTHONPATH'] = os.pathsep.join([
     
 
 def django(django_cmd):
-    cmd = "django-admin.py %s --settings=test_settings" % django_cmd
+    django_admin = os.path.join(os.path.dirname(sys.executable), "django-admin.py")
+    cmd = "%s %s --settings=test_settings" % (django_admin, django_cmd)
     print cmd
     return subprocess.call([cmd], shell=True, cwd=ROOT)
     
