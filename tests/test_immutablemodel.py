@@ -2,7 +2,7 @@
 from django.test import TestCase
 
 from testapp.models import *
-from immutablefield.models import CantDeleteImmutableException
+from immutablemodel.models import CantDeleteImmutableException
 
 class Case01_NoMetaTest(TestCase):
     def setUp(self):

@@ -1,5 +1,5 @@
 from django.db import models
-from immutablefield import ImmutableModel
+from immutablemodel import ImmutableModel
 
 class NoMeta(ImmutableModel):
     name = models.CharField(max_length=50)

@@ -1,5 +1,5 @@
 =====================
-django-immutablefield
+django-immutablemodel
 =====================
 Easily make all of a django model's fields immutable after saving.
 You can customize it to make some fields mutable.
