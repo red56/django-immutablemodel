@@ -26,13 +26,13 @@ Run the tests::
 
 Release HOWTO
 =============
-*#TODO: review this...*
 
 To make a release, 
 
-  1) Update release date/version in NEWS.txt and setup.py
-  2) Run 'python setup.py sdist'
-  3) Test the generated source distribution in dist/
-  4) Upload to PyPI: 'python setup.py sdist register upload'
-  5) Increase version in setup.py (for next release)
-
+  1) git flow release start VERSIONNUMBER
+  2) Update release date/version (VERSIONNUMBER) in NEWS.txt and setup.py
+  3) git flow release finish VERSIONNUMBER && git push && git push --tags 
+  4) Run 'python setup.py sdist'
+  5) Test the generated source distribution in dist/
+  6) Upload to PyPI: 'python setup.py sdist register upload'
+  7) Increase version in setup.py (for next release -- with dev addition)

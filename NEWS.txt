@@ -11,5 +11,14 @@ Release notes
 
 *Release date: 28-Apr-2010*
 
-* Initial release
+* Initial release by Rob Madole as django-immutablefield
 
+0.2
+---
+
+* Version by Helder Silva (skandal) on bitbucket adding sign_off field. (not formally released)
+
+0.3
+---
+
+* Version by Tim Diggins (red56) calling it django-immutablemodel and making immutability after save by default

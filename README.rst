@@ -9,7 +9,7 @@ You can change when it can be mutable
 History and credits
 -------------------
 Very heavily based on Rob Madole's original code at https://bitbucket.org/robmadole/django-immutablefield and 
-Helder Silvea's fork at https://bitbucket.org/skandal/django-immutablefield.
+Helder Silva's fork at https://bitbucket.org/skandal/django-immutablefield.
 Rob's was 'inspired by a Google search that didn't turn up reusable solution for making
 fields immutable inside of a Django model'.
 
