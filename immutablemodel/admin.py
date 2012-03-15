@@ -11,12 +11,12 @@ class ImmutableModelAdmin(admin.ModelAdmin):
         if not obj is None:
             # We'r chaging the obj
             try:
-                signed_off_field_name = obj._meta.immutable_lock_field
+                immutable_lock_field_name = obj._meta.immutable_lock_field
             except AttributeError:
                 return self.readonly_fields
             else:
-                if not getattr(reload_obj(), signed_off_field_name, False):
-                    return self.readonly_fields + tuple([signed_off_field_name])
+                if not getattr(reload_obj(), immutable_lock_field_name, False):
+                    return self.readonly_fields + tuple([immutable_lock_field_name])
             return self.readonly_fields + tuple(obj._meta.immutable)
         else:
             return self.readonly_fields
@@ -66,16 +66,16 @@ class ComplexImmutableModelAdmin(ImmutableModelAdmin):
         if '_saveasnew' in request.POST:
             request.method = 'GET'
             try:
-                signed_off_field_name = obj._meta.immutable_lock_field
+                immutable_lock_field_name = obj._meta.immutable_lock_field
             except AttributeError:
-                signed_off_field_name = ""
+                immutable_lock_field_name = ""
 
             fields_dict = {}
             fields_dict.update(
                 dict([
                     (field.name, field._get_val_from_obj(obj))
                     for field in obj._meta.fields
-                    if field.name != signed_off_field_name
+                    if field.name != immutable_lock_field_name
                 ])
             )
 
@@ -87,7 +87,7 @@ class ComplexImmutableModelAdmin(ImmutableModelAdmin):
                         getattr(obj, field.name).all()
                     ]),)
                     for field in (_f for _f in obj._meta.many_to_many)
-                    if field.name != signed_off_field_name
+                    if field.name != immutable_lock_field_name
                 )
             )
 
