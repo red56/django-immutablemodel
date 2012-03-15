@@ -1,4 +1,6 @@
 *.pyc
+/*.tmproj
+/.*
 
 .installed.cfg
 bin
