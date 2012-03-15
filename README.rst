@@ -69,14 +69,14 @@ sure this is Python we can do almost anything if we try hard enough)
 You can make it complain
 ------------------------
 
-Change the meta section to include ``quiet = False`` and it will raise a
+Change the meta section to include ``immutable_quiet = False`` and it will raise a
 ``ValueError`` if an attempt is made to change this value
 
 ::
 
     class Meta:
         mutable_fields = [] # you can actually leave this out...
-        quiet = False
+        immutable_quiet = False
 
 The error is raised as soon as you try and set the field, not when ``save()`` is
 called.
@@ -123,14 +123,29 @@ Reference
         as strings.::
 
             class Meta:
+                mutable_fields = ['some_transient_data']
+
+        Specify multiple fields::
+
+            class ImmutableMeta:
+                mutable_fields = ['some_transient_data', 'name', 'foreign_key']
+
+    ``immutable_fields``
+
+        Tell ``ImmutableModel`` which fields should not be allowed to change.
+        NB: you can't specify mutable_fields AND immutable_fields.
+        This value must be a tuple or a list and contain the names of the fields
+        as strings.::
+
+            class Meta:
                 immutable_fields = ['my_special_id']
 
         Specify multiple fields::
 
             class ImmutableMeta:
-                immutable = ['my_special_id', 'name', 'foreign_key']
+                immutable_fields = ['my_special_id', 'name', 'foreign_key']
     
-    ``quiet``
+    ``immutable_quiet``
 
         If an attempt is made to change an immutable field, should we quietly
         prevent it.
@@ -139,8 +154,19 @@ Reference
         field is changed.::
 
             class ImmutableMeta:
-                immutable = ['my_special_id']
-                quiet = False
+                immutable_quiet = False
+
+    ``immutable_signoff_field``
+
+        This determines when to enforce immutability. By default it is equal to immutable_model.models.PK_FIELD.
+        This means that when the PK_FIELD is full (typically when saved) the model is immutable, but before it is
+        saved it is mutable.
+        Alternatively you can specify a field by name, or you can set it to None, which means that you can't change
+        immutable fields once they are set (even before saving).
+
+            class ImmutableMeta:
+                immutable_signoff_field = ['is_locked']
+
 
 **settings.py**
 

@@ -23,19 +23,22 @@ class QuietOption(Option):
 class FieldsOption(Option):
     def get_default_for(self, model_class):
         return []
-    
-IMMUTABLEFIELD_OPTIONS = dict([(opt.name, opt) for opt in (
-    FieldsOption('immutable'),
-    QuietOption('immutable_quiet'),
-    Option('immutable_sign_off_field'),
-    Option('immutable_is_deletable', default=True),
-    )])
-    
+
 
 class CantDeleteImmutableException(Exception): pass
 
 class _Undefined: pass
 
+class PK_FIELD: pass
+
+IMMUTABLEFIELD_OPTIONS = dict([(opt.name, opt) for opt in (
+    FieldsOption('mutable_fields'),
+    FieldsOption('immutable_fields'),
+    QuietOption('immutable_quiet'),
+    Option('immutable_sign_off_field', default=PK_FIELD),
+    Option('immutable_is_deletable', default=True),
+    )])
+    
 
 class ImmutableModelMeta(models.base.ModelBase):
     def __new__(cls, name, bases, attrs):
@@ -53,6 +56,8 @@ class ImmutableModelMeta(models.base.ModelBase):
 
     @staticmethod
     def extract_options(meta):
+        if getattr(meta, "immutable", _Undefined) is not _Undefined:
+            raise ValueError("immutable is not an option for ImmutableModels - use immutable_fields instead")
         immutability_options = {}
         for opt_name in IMMUTABLEFIELD_OPTIONS:
             value = getattr(meta, opt_name, _Undefined)
@@ -72,28 +77,44 @@ class ImmutableModelMeta(models.base.ModelBase):
 
     @staticmethod
     def check_options(model):
-        if not isinstance(model._meta.immutable, list):
-            raise TypeError('immutable attribute in must be '
-                            'a list')
-
-        if not (isinstance(model._meta.immutable_sign_off_field, basestring) or \
-            model._meta.immutable_sign_off_field is None):
+        if not isinstance(model._meta.immutable_fields, list):
+            raise TypeError('immutable_fields attribute in %s must be '
+                            'a list' % model)
+        if not isinstance(model._meta.mutable_fields, list):
+            raise TypeError('mutable_fields attribute in %s must be '
+                            'a list' % model)
+        
+        if model._meta.mutable_fields and model._meta.immutable_fields:
+            raise ValueError('You can specify either mutable_fields OR immutable_fields in %s (not both)' % model)
+        if model._meta.immutable_fields:
+            model._meta.mutable_fields = [f.name for f in model._meta.fields if f.name not in model._meta.immutable_fields]
+        # we don't need the list of immutable_fields anymore -- only used for specifying
+        del model._meta.immutable_fields
+        
+        if model._meta.immutable_sign_off_field is PK_FIELD:
+            model._meta.immutable_sign_off_field = model._meta.pk.name
+        elif (isinstance(model._meta.immutable_sign_off_field, basestring) or 
+            model._meta.immutable_sign_off_field is None
+            ):
+            pass
+        else:
             raise TypeError('immutable_sign_off_field attribute in '
-                            'Immutable must be a string')
-
+                            '%s must be a string (or None, or omitted)' % model)
+        
+        
         if not isinstance(model._meta.immutable_quiet, bool):
-            raise TypeError('immutable_quiet attribute must '
-                            'be boolean')
+            raise TypeError('immutable_quiet attribute in %s must '
+                            'be boolean' % model)
 
         if not isinstance(model._meta.immutable_is_deletable, bool):
-            raise TypeError('immutable_is_deletable attribute in ImmutableMeta must '
-                            'be boolean')
+            raise TypeError('immutable_is_deletable attribute in %s must '
+                            'be boolean' % model)
             
 class ImmutableModel(models.Model):
     __metaclass__ = ImmutableModelMeta
 
     def can_change_field(self, field_name):
-        return field_name not in self._meta.immutable or not self.is_signed_off()
+        return field_name in self._meta.mutable_fields or not self.is_signed_off()
 
     def __setattr__(self, name, value):
         if not self.can_change_field(name):

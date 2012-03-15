@@ -1,27 +1,30 @@
 # encoding: utf-8
 from django.test import TestCase
 
-from immutablefield import ImmutableModel, CantDeleteImmutableException
-
 from testapp.models import *
-"""
-    Test Classes
-"""
+from immutablefield.models import CantDeleteImmutableException
 
 class Case01_NoMetaTest(TestCase):
     def setUp(self):
         self.obj = NoMeta.objects.create(name='Vader')
 
-    def test__simple(self):
+    def test01_cant_change_once_saved(self):
+        """A model with no meta should have all the fields immutable"""
         self.assertEqual(self.obj.name, 'Vader')
         self.obj.name = 'Anakin'
         self.obj.save()
 
         db_object = NoMeta.objects.all()[0]
-        self.assertEqual(self.obj.name, 'Anakin')
-        self.assertEqual(db_object.name, 'Anakin')
+        self.assertEqual(self.obj.name, 'Vader')
+        self.assertEqual(db_object.name, 'Vader')
 
-    def test__delete(self):
+    def test02_can_change_before_save_by_default(self):
+        obj = NoMeta(name='Anakin')
+        obj.name = 'Darth'
+        obj.save()
+        self.assertEqual(obj.name, 'Darth')
+        
+    def test03_delete(self):
         self.obj.delete()
         self.assertEqual(
             0,

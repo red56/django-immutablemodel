@@ -9,7 +9,7 @@ class SimpleNoSignOffField(ImmutableModel):
     name = models.CharField(max_length=50)
 
     class Meta:
-        immutable = ['special_id']
+        immutable_fields = ['special_id']
 
 
 class SimpleSignOffField(ImmutableModel):
@@ -18,7 +18,7 @@ class SimpleSignOffField(ImmutableModel):
     sign_off = models.BooleanField(default=False)
 
     class Meta:
-        immutable = ['special_id']
+        immutable_fields = ['special_id']
         immutable_sign_off_field = 'sign_off'
 
 
@@ -28,7 +28,7 @@ class ComplexSignOffField(ImmutableModel):
     name = models.CharField(max_length=50)
 
     class Meta:
-        immutable = ['special_id']
+        immutable_fields = ['special_id']
         immutable_sign_off_field = 'sign_off'
 
 
@@ -36,7 +36,7 @@ class NoisyNoSignOffField(ImmutableModel):
     special_id = models.IntegerField()
 
     class Meta:
-        immutable = ['special_id']
+        immutable_fields = ['special_id']
         immutable_quiet = False
 
 
@@ -45,7 +45,7 @@ class NoisySignOffField(ImmutableModel):
     sign_off = models.BooleanField(default=False)
 
     class Meta:
-        immutable = ['special_id']
+        immutable_fields = ['special_id']
         immutable_sign_off_field = 'sign_off'
         immutable_quiet = False
 
