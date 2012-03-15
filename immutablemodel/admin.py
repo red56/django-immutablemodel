@@ -10,14 +10,10 @@ class ImmutableModelAdmin(admin.ModelAdmin):
 
         if not obj is None:
             # We'r chaging the obj
-            try:
-                immutable_lock_field_name = obj._meta.immutable_lock_field
-            except AttributeError:
-                return self.readonly_fields
-            else:
-                if not getattr(reload_obj(), immutable_lock_field_name, False):
-                    return self.readonly_fields + tuple([immutable_lock_field_name])
-            return self.readonly_fields + tuple(obj._meta.immutable)
+            immutable_lock_field_name = obj._meta.immutable_lock_field
+            if not getattr(reload_obj(), immutable_lock_field_name, False):
+                return self.readonly_fields + tuple([immutable_lock_field_name])
+            return self.readonly_fields + tuple(obj._meta.immutable_fields)
         else:
             return self.readonly_fields
 

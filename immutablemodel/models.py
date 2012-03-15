@@ -87,8 +87,9 @@ class ImmutableModelMeta(models.base.ModelBase):
             raise ValueError('You can specify either mutable_fields OR immutable_fields in %s (not both)' % model)
         if model._meta.immutable_fields:
             model._meta.mutable_fields = [f.name for f in model._meta.fields if f.name not in model._meta.immutable_fields]
-        # we don't need the list of immutable_fields anymore -- only used for specifying
-        del model._meta.immutable_fields
+        
+        # we'll keep immutable_fields, but just as the reverse of mutable fields:
+        model._meta.immutable_fields = [f.name for f in model._meta.fields if f.name not in model._meta.mutable_fields]
         
         if model._meta.immutable_lock_field is PK_FIELD:
             model._meta.immutable_lock_field = model._meta.pk.name
