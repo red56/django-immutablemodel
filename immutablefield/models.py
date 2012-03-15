@@ -146,12 +146,6 @@ class ImmutableModel(models.Model):
     def has_immutable_lock_field(self):
         return self._meta.immutable_lock_field != None
 
-    def field_has_immutable_lock_field(self, field):
-        if hasattr(field, '_meta'):
-            return hasattr(field._meta, 'immutable_lock_field')
-        else:
-            return False
-
     def delete(self):
         if not self._meta.immutable_is_deletable and self.is_immutable():
             if self._meta.immutable_quiet:
