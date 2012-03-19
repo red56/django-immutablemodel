@@ -20,7 +20,7 @@ setup(
         'Topic :: Database'
     ],
     keywords='django model fields immutable frozen',
-    author='Tim Diggins',
+    author='Rob Madole, Helder Silva, Tim Diggins',
     author_email='tim@red56.co.uk',
     url='https://github.com/red56/django-immutablemodel',
     packages = [ 'immutablemodel' ],
