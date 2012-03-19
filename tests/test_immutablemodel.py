@@ -61,6 +61,29 @@ class Case02_CanCreateModelNoSignOffFieldTest(TestCase):
             0,
             len(SimpleNoSignOffField.objects.all()),
         )
+class Case03_HavingMutableField_Test(TestCase):
+    def setUp(self):
+        self.obj = HavingMutableField.objects.create(
+            special_id=1,
+            name='Vader',
+        )
+
+    def test__simple(self):
+        self.assertEqual(self.obj.special_id, 1)
+        self.assertEqual(self.obj.name, 'Vader')
+
+        self.obj.special_id = 1000
+        self.obj.name = 'Luke'
+
+        self.obj.save()
+
+        db_object = HavingMutableField.objects.all()[0]
+        # Should stay the same, it's immutable. Except the name.
+        self.assertEqual(self.obj.special_id, 1)
+        self.assertEqual(self.obj.name, 'Luke')
+        self.assertEqual(db_object.special_id, 1)
+        self.assertEqual(db_object.name, 'Luke')
+
 
 class Case03_CanCreateModelSignOffFieldTest(TestCase):
     def setUp(self):

@@ -5,6 +5,14 @@ class NoMeta(ImmutableModel):
     name = models.CharField(max_length=50)
 
 
+class HavingMutableField(ImmutableModel):
+    special_id = models.IntegerField()
+    name = models.CharField(max_length=50)
+
+    class Meta:
+        mutable_fields = ['name']
+
+
 class SimpleNoSignOffField(ImmutableModel):
     special_id = models.IntegerField()
     name = models.CharField(max_length=50)
