@@ -347,3 +347,16 @@ class Case07_InheritenceTests(TestCase):
             self.assertEqual(t.child_field, "child", "expecting %s.child_field" % name)
             self.assertEqual(t.parent_field, "parent", "expecting %s.parent_field" % name)
 
+    def test02_can_inherit_attributes(self):
+        c = InheritingModel(child_field="child", mutable_field="whatever", special_id=1)
+        c.save()
+        c.child_field="other"
+        c.special_id=47
+        c.mutable_field="other"
+        c.save()
+        db_object = InheritingModel.objects.get(pk=c.id)
+        for t, name in [(c, 'c'), (db_object, 'db_object')]:
+            self.assertEqual(t.child_field, "child", "expecting %s.child_field" % name)
+            self.assertEqual(t.special_id, 1, "expecting %s.special_id" % name)
+            self.assertEqual(t.mutable_field, "other", "expecting %s.mutable_field" % name)
+    
