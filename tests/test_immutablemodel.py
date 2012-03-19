@@ -360,3 +360,24 @@ class Case07_InheritenceTests(TestCase):
             self.assertEqual(t.special_id, 1, "expecting %s.special_id" % name)
             self.assertEqual(t.mutable_field, "other", "expecting %s.mutable_field" % name)
     
+    def test03_can_inherit_attributes_from_inherited_meta(self):
+        self.assertEqual(['mutable_field'], AbstractModelWithAttrs._meta.mutable_fields)
+        self.assertEqual(['mutable_field'], NoisyAbstractModelWithAttrs._meta.mutable_fields)
+
+    def test04_can_inherit_attributes_repeatedly(self):
+        c = NoisyInheritingModel(child_field="child", mutable_field="whatever", special_id=1)
+        c.save()
+        def changeme():
+            c.child_field="other"
+            c.special_id=47   
+        self.assertRaises(Exception, changeme, 
+             'expecting exception to be raised because immutable quiet should be inherited'
+            )
+        c.mutable_field="other"
+        c.save()
+        db_object = NoisyInheritingModel.objects.all()[0]
+        for t, name in [(c, 'c'), (db_object, 'db_object')]:
+            self.assertEqual(t.child_field, "child", "expecting %s.child_field" % name)
+            self.assertEqual(t.special_id, 1, "expecting %s.special_id" % name)
+            self.assertEqual(t.mutable_field, "other", "expecting %s.mutable_field" % name)
+            

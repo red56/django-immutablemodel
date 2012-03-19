@@ -53,26 +53,28 @@ class ImmutableModelMeta(models.base.ModelBase):
             return super_new(cls, name, bases, attrs)
         if 'Meta' in attrs:
             meta = attrs.get('Meta')
-            immutability_options = ImmutableModelMeta.immutable_options_from_dict(meta)
-            ImmutableModelMeta.strip_immutability_options(meta)
         else:
-            immutability_options = ImmutableModelMeta.immutable_options_from_bases(bases)
+            meta = ImmutableModelMeta.meta_from_bases(bases)
+        immutability_options = ImmutableModelMeta.immutable_options_from_meta(meta)
+        if meta:
+            stripped = ImmutableModelMeta.strip_immutability_options(meta)
         registered_model = models.base.ModelBase.__new__(cls, name, bases, attrs)
+        if meta:
+            ImmutableModelMeta.reattach_stripped(meta, stripped)
         ImmutableModelMeta.check_and_reinject_options(immutability_options, registered_model)
         return registered_model
 
     @staticmethod 
-    def immutable_options_from_bases(bases):
+    def meta_from_bases(bases):
         for b in bases: 
-            if issubclass(b, ImmutableModel):
-                return ImmutableModelMeta.immutable_options_from_dict(b._meta)
-        return {}
-    
+            if issubclass(b, ImmutableModel) and b is not ImmutableModel:
+                return getattr(b, "Meta")
+                
     @staticmethod
-    def immutable_options_from_dict(d):
+    def immutable_options_from_meta(meta):
         immutability_options = {}
         for opt_name in IMMUTABLEFIELD_OPTIONS:
-            value = getattr(d, opt_name, UNDEFINED)
+            value = getattr(meta, opt_name, UNDEFINED)
             immutability_options[opt_name] = value
         return immutability_options
     
@@ -80,10 +82,18 @@ class ImmutableModelMeta(models.base.ModelBase):
     def strip_immutability_options(meta):
         if "immutable" in dir(meta):
             raise ValueError("immutable is not an option for ImmutableModels - use immutable_fields instead")
+        stripped = {}
         for opt_name in IMMUTABLEFIELD_OPTIONS:
-            if opt_name in dir(meta):
+            if opt_name in meta.__dict__:
+                stripped[opt_name] = getattr(meta, opt_name)
                 delattr(meta, opt_name)
-            
+        return stripped
+    
+    @staticmethod
+    def reattach_stripped(meta, stripped):
+        for k,v in stripped.iteritems():
+            setattr(meta, k, v)
+             
     @staticmethod
     def check_and_reinject_options(immutability_options, model):
         for opt_name, value in immutability_options.iteritems():

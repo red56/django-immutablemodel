@@ -103,5 +103,5 @@ class NoisyAbstractModelWithAttrs(AbstractModelWithAttrs):
         abstract = True
     
 class NoisyInheritingModel(NoisyAbstractModelWithAttrs):
-    other_child_field = models.CharField(max_length=50)
+    child_field = models.CharField(max_length=50)
 
