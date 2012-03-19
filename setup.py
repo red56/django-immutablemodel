@@ -8,7 +8,7 @@ NEWS = open(os.path.join(here, 'NEWS.txt')).read()
 
 setup(
     name = 'django-immutablemodel',
-    version = '0.3',
+    version = '0.3.1',
     description="A base class for Django to allow immutable fields on Models",
     long_description=README + '\n\n' + NEWS,
     classifiers=[
@@ -20,7 +20,7 @@ setup(
         'Topic :: Database'
     ],
     keywords='django model fields immutable frozen',
-    author='Tim Diggins',
+    author='Rob Madole, Helder Silva, Tim Diggins',
     author_email='tim@red56.co.uk',
     url='https://github.com/red56/django-immutablemodel',
     packages = [ 'immutablemodel' ],

@@ -4,6 +4,7 @@ from immutablemodel import ImmutableModel
 class NoMeta(ImmutableModel):
     name = models.CharField(max_length=50)
 
+
 class SimpleNoSignOffField(ImmutableModel):
     special_id = models.IntegerField()
     name = models.CharField(max_length=50)
@@ -65,3 +66,11 @@ class QuietNotDeletable(ImmutableModel):
         immutable_quiet = True
         immutable_is_deletable = False
 
+class AbstractModel(ImmutableModel):
+    parent_field = models.CharField(max_length=50)
+    
+    class Meta:
+        abstract = True
+        
+class ChildModel(AbstractModel):
+    child_field = models.CharField(max_length=50)

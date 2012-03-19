@@ -310,3 +310,17 @@ class Case06_WillRaiseErrorsTest(TestCase):
             0,
             len(NoisySignOffField.objects.all()),
         )
+
+class Case07_InheritenceTests(TestCase):
+    
+    def test01_defaults_work_for_abstract(self):
+        c = ChildModel(parent_field="parent", child_field="child")
+        c.save()
+        c.child_field="other"
+        c.parent_field="other"
+        c.save()
+        db_object = ChildModel.objects.all()[0]
+        for t, name in [(c, 'c'), (db_object, 'db_object')]:
+            self.assertEqual(t.child_field, "child", "expecting %s.child_field" % name)
+            self.assertEqual(t.parent_field, "parent", "expecting %s.parent_field" % name)
+

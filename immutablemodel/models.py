@@ -76,6 +76,8 @@ class ImmutableModelMeta(models.base.ModelBase):
 
     @staticmethod
     def check_options(model):
+        if model._meta.abstract:
+            return
         if not isinstance(model._meta.immutable_fields, list):
             raise TypeError('immutable_fields attribute in %s must be '
                             'a list' % model)

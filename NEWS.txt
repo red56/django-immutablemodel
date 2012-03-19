@@ -22,3 +22,8 @@ Release notes
 ---
 
 * Version by Tim Diggins (red56) calling it django-immutablemodel and making immutability after save by default
+
+0.3.1
+---
+
+* Fixing problem with abstract models
