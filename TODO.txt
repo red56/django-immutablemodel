@@ -1,1 +1,2 @@
+Inheriting options from parent abstract classes?
 Tests for admin stuff.
