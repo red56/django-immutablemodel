@@ -27,3 +27,8 @@ Release notes
 ---
 
 * Fixing problem with abstract models
+
+0.3.2
+---
+
+* Allowing for full inheritance of immutability options within Meta 

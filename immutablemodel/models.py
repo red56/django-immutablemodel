@@ -26,7 +26,12 @@ class FieldsOption(Option):
 
 class CantDeleteImmutableException(Exception): pass
 
-class _Undefined: pass
+class __Undefined(object): 
+    def __len__(self):
+        return False
+    def __repr__(self):
+        return u"__Undefined()"
+UNDEFINED = __Undefined()
 
 class PK_FIELD: pass
 
@@ -46,38 +51,58 @@ class ImmutableModelMeta(models.base.ModelBase):
         if not parents:
             # If this isn't a **sub**class of ImmutableMeta (ie. probably ImmutableModel itself), don't do anything special.
             return super_new(cls, name, bases, attrs)
-
-        immutability_options = ImmutableModelMeta.extract_options(attrs.get('Meta', {}))
+        if 'Meta' in attrs:
+            meta = attrs.get('Meta')
+        else:
+            meta = ImmutableModelMeta.meta_from_bases(bases)
+        immutability_options = ImmutableModelMeta.immutable_options_from_meta(meta)
+        if meta:
+            stripped = ImmutableModelMeta.strip_immutability_options(meta)
         registered_model = models.base.ModelBase.__new__(cls, name, bases, attrs)
-        ImmutableModelMeta.reinject_options(immutability_options, registered_model)
-        ImmutableModelMeta.check_options(registered_model)
+        if meta:
+            ImmutableModelMeta.reattach_stripped(meta, stripped)
+        ImmutableModelMeta.check_and_reinject_options(immutability_options, registered_model)
         return registered_model
 
+    @staticmethod 
+    def meta_from_bases(bases):
+        for b in bases: 
+            if issubclass(b, ImmutableModel) and b is not ImmutableModel:
+                return getattr(b, "Meta")
+                
     @staticmethod
-    def extract_options(meta):
-        if getattr(meta, "immutable", _Undefined) is not _Undefined:
-            raise ValueError("immutable is not an option for ImmutableModels - use immutable_fields instead")
+    def immutable_options_from_meta(meta):
         immutability_options = {}
         for opt_name in IMMUTABLEFIELD_OPTIONS:
-            value = getattr(meta, opt_name, _Undefined)
-            if value is not _Undefined:
-                delattr(meta, opt_name)
+            value = getattr(meta, opt_name, UNDEFINED)
             immutability_options[opt_name] = value
         return immutability_options
     
     @staticmethod
-    def reinject_options(immutability_options, registered_model):
-        for opt_name, value in immutability_options.iteritems():
-            if value is _Undefined and getattr(registered_model._meta, opt_name, _Undefined) is _Undefined:
-                #only want to use default when registered_model doesn't have a value yet 
-                value = IMMUTABLEFIELD_OPTIONS[opt_name].get_default_for(registered_model)
-            if value is not _Undefined:
-                setattr(registered_model._meta, opt_name, value)
-
+    def strip_immutability_options(meta):
+        if "immutable" in dir(meta):
+            raise ValueError("immutable is not an option for ImmutableModels - use immutable_fields instead")
+        stripped = {}
+        for opt_name in IMMUTABLEFIELD_OPTIONS:
+            if opt_name in meta.__dict__:
+                stripped[opt_name] = getattr(meta, opt_name)
+                delattr(meta, opt_name)
+        return stripped
+    
     @staticmethod
-    def check_options(model):
-        if model._meta.abstract:
-            return
+    def reattach_stripped(meta, stripped):
+        for k,v in stripped.iteritems():
+            setattr(meta, k, v)
+             
+    @staticmethod
+    def check_and_reinject_options(immutability_options, model):
+        for opt_name, value in immutability_options.iteritems():
+            if value is UNDEFINED and getattr(model._meta, opt_name, UNDEFINED) is UNDEFINED:
+                #only want to use default when registered_model doesn't have a value yet
+                value = IMMUTABLEFIELD_OPTIONS[opt_name].get_default_for(model)
+            if value is not UNDEFINED:
+                setattr(model._meta, opt_name, value)
+
         if not isinstance(model._meta.immutable_fields, list):
             raise TypeError('immutable_fields attribute in %s must be '
                             'a list' % model)
@@ -85,24 +110,31 @@ class ImmutableModelMeta(models.base.ModelBase):
             raise TypeError('mutable_fields attribute in %s must be '
                             'a list' % model)
         
-        if model._meta.mutable_fields and model._meta.immutable_fields:
-            raise ValueError('You can specify either mutable_fields OR immutable_fields in %s (not both)' % model)
-        if model._meta.immutable_fields:
-            model._meta.mutable_fields = [f.name for f in model._meta.fields if f.name not in model._meta.immutable_fields]
+        if immutability_options['mutable_fields'] and immutability_options["immutable_fields"]:
+            we_found = ("We found:\n" +
+            ("mutable_fields: %s\n" % "mutable_fields")+
+            ("immutable_fields: %s\n" % immutability_options["immutable_fields"])
+            )
+            raise ValueError('You can specify either mutable_fields OR immutable_fields in %s (not both).\n%s' % (model, we_found))
         
-        # we'll keep immutable_fields, but just as the reverse of mutable fields:
-        model._meta.immutable_fields = [f.name for f in model._meta.fields if f.name not in model._meta.mutable_fields]
+        if immutability_options["immutable_fields"]:
+            model._meta.mutable_fields = [f.name for f in model._meta.fields if f.name not in immutability_options["immutable_fields"]]
+        # we'll make immutable_admin_fields as the reverse of mutable fields:
+        model._meta.immutable_admin_fields = [f.name for f in model._meta.fields if f.name not in model._meta.mutable_fields]
         
-        if model._meta.immutable_lock_field is PK_FIELD:
-            model._meta.immutable_lock_field = model._meta.pk.name
-        elif (isinstance(model._meta.immutable_lock_field, basestring) or 
-            model._meta.immutable_lock_field is None
-            ):
+        if model._meta.abstract:
+            # ignore immutable_lock_field in abstract models
             pass
         else:
-            raise TypeError('immutable_lock_field attribute in '
-                            '%s must be a string (or None, or omitted)' % model)
-        
+            if model._meta.immutable_lock_field is PK_FIELD:
+                model._meta.immutable_lock_field = model._meta.pk.name
+            elif (isinstance(model._meta.immutable_lock_field, basestring) or 
+                model._meta.immutable_lock_field is None
+                ):
+                pass
+            else:
+                raise TypeError('immutable_lock_field attribute in '
+                                '%s must be a string (or None, or omitted)' % model)
         
         if not isinstance(model._meta.immutable_quiet, bool):
             raise TypeError('immutable_quiet attribute in %s must '

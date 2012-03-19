@@ -13,7 +13,7 @@ class ImmutableModelAdmin(admin.ModelAdmin):
             immutable_lock_field_name = obj._meta.immutable_lock_field
             if not getattr(reload_obj(), immutable_lock_field_name, False):
                 return self.readonly_fields + tuple([immutable_lock_field_name])
-            return self.readonly_fields + tuple(obj._meta.immutable_fields)
+            return self.readonly_fields + tuple(obj._meta.immutable_admin_fields)
         else:
             return self.readonly_fields
 

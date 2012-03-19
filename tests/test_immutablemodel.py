@@ -61,6 +61,29 @@ class Case02_CanCreateModelNoSignOffFieldTest(TestCase):
             0,
             len(SimpleNoSignOffField.objects.all()),
         )
+class Case03_HavingMutableField_Test(TestCase):
+    def setUp(self):
+        self.obj = HavingMutableField.objects.create(
+            special_id=1,
+            name='Vader',
+        )
+
+    def test__simple(self):
+        self.assertEqual(self.obj.special_id, 1)
+        self.assertEqual(self.obj.name, 'Vader')
+
+        self.obj.special_id = 1000
+        self.obj.name = 'Luke'
+
+        self.obj.save()
+
+        db_object = HavingMutableField.objects.all()[0]
+        # Should stay the same, it's immutable. Except the name.
+        self.assertEqual(self.obj.special_id, 1)
+        self.assertEqual(self.obj.name, 'Luke')
+        self.assertEqual(db_object.special_id, 1)
+        self.assertEqual(db_object.name, 'Luke')
+
 
 class Case03_CanCreateModelSignOffFieldTest(TestCase):
     def setUp(self):
@@ -324,3 +347,37 @@ class Case07_InheritenceTests(TestCase):
             self.assertEqual(t.child_field, "child", "expecting %s.child_field" % name)
             self.assertEqual(t.parent_field, "parent", "expecting %s.parent_field" % name)
 
+    def test02_can_inherit_attributes(self):
+        c = InheritingModel(child_field="child", mutable_field="whatever", special_id=1)
+        c.save()
+        c.child_field="other"
+        c.special_id=47
+        c.mutable_field="other"
+        c.save()
+        db_object = InheritingModel.objects.get(pk=c.id)
+        for t, name in [(c, 'c'), (db_object, 'db_object')]:
+            self.assertEqual(t.child_field, "child", "expecting %s.child_field" % name)
+            self.assertEqual(t.special_id, 1, "expecting %s.special_id" % name)
+            self.assertEqual(t.mutable_field, "other", "expecting %s.mutable_field" % name)
+    
+    def test03_can_inherit_attributes_from_inherited_meta(self):
+        self.assertEqual(['mutable_field'], AbstractModelWithAttrs._meta.mutable_fields)
+        self.assertEqual(['mutable_field'], NoisyAbstractModelWithAttrs._meta.mutable_fields)
+
+    def test04_can_inherit_attributes_repeatedly(self):
+        c = NoisyInheritingModel(child_field="child", mutable_field="whatever", special_id=1)
+        c.save()
+        def changeme():
+            c.child_field="other"
+            c.special_id=47   
+        self.assertRaises(Exception, changeme, 
+             'expecting exception to be raised because immutable quiet should be inherited'
+            )
+        c.mutable_field="other"
+        c.save()
+        db_object = NoisyInheritingModel.objects.all()[0]
+        for t, name in [(c, 'c'), (db_object, 'db_object')]:
+            self.assertEqual(t.child_field, "child", "expecting %s.child_field" % name)
+            self.assertEqual(t.special_id, 1, "expecting %s.special_id" % name)
+            self.assertEqual(t.mutable_field, "other", "expecting %s.mutable_field" % name)
+            
