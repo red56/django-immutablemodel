@@ -41,6 +41,12 @@ class ComplexSignOffField(ImmutableModel):
         immutable_lock_field = 'is_locked'
 
 
+class NoisyMinimal(ImmutableModel):
+    special_id = models.IntegerField()
+
+    class Meta:
+        immutable_quiet = False
+        
 class NoisyNoSignOffField(ImmutableModel):
     special_id = models.IntegerField()
 

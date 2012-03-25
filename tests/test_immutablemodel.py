@@ -265,6 +265,7 @@ class Case06_WillRaiseErrorsTest(TestCase):
         self.not_deletable_noisy = NoisyNotDeletable.objects.create(
             special_id=1123,
         )
+        self.noisy_minimal = NoisyMinimal.objects.create(special_id=1123)
 
     def test__simple(self):
         self.assertEqual(self.no_lock_field.special_id, 1)
@@ -334,6 +335,18 @@ class Case06_WillRaiseErrorsTest(TestCase):
             len(NoisySignOffField.objects.all()),
         )
 
+    def test_can_delete_deletable_locked(self):
+        for name in [
+            'no_lock_field',
+            'lock_field',
+            'noisy_minimal',
+            ]:
+            instance = getattr(self, name)
+            instance_id = instance.id
+            model = instance.__class__
+            instance.delete()
+            self.assertFalse(model.objects.filter(pk=instance_id).exists(), 'not expecting %s to exist after delete' % name)
+            
 class Case07_InheritenceTests(TestCase):
     
     def test01_defaults_work_for_abstract(self):

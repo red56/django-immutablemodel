@@ -148,8 +148,13 @@ class ImmutableModel(models.Model):
     __metaclass__ = ImmutableModelMeta
 
     def can_change_field(self, field_name):
-        return field_name in self._meta.mutable_fields or not self.is_immutable()
-
+        field_changable = field_name in self._meta.mutable_fields or not self.is_immutable()
+        if not field_changable and field_name == self._meta.pk.attname:
+            if getattr(self, '_deleting_immutable_model', False):
+                #deleting this immutable model, so need to allow Collector.delete to change the field
+                return True 
+        return field_changable
+    
     def __setattr__(self, name, value):
         if not self.can_change_field(name):
             try:
@@ -161,7 +166,7 @@ class ImmutableModel(models.Model):
                 current_value != value:
                 if self._meta.immutable_quiet:
                     return
-                raise ValueError('%s is immutable and cannot be changed' % name)
+                raise ValueError('%s.%s is immutable and cannot be changed' % (self.__class__.__name__, name))
         super(ImmutableModel, self).__setattr__(name, value)
 
     def is_immutable(self):
@@ -188,7 +193,9 @@ class ImmutableModel(models.Model):
                 raise CantDeleteImmutableException(
                     "%s is immutable and cannot be deleted" % self
                 )
+        self._deleting_immutable_model = True
         super(ImmutableModel, self).delete()
+        delattr(self, '_deleting_immutable_model')
 
     class Meta:
         abstract = True
