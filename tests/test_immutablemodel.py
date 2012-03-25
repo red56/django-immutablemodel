@@ -31,6 +31,10 @@ class Case01_NoMetaTest(TestCase):
             len(NoMeta.objects.all()),
         )
 
+    def test_cant_change_id_field(self):
+        self.obj.id = None
+        self.assertNotEqual(self.obj.id, None, "expecting not to be able to change id field (not automatically locked)")
+
 
 class Case02_CanCreateModelNoLockFieldTest(TestCase):
     def setUp(self):
@@ -61,6 +65,11 @@ class Case02_CanCreateModelNoLockFieldTest(TestCase):
             0,
             len(SimpleNoLockField.objects.all()),
         )
+        
+    def test_can_change_id_field(self):
+        self.obj.id = None
+        self.assertEqual(self.obj.id, None, "expecting to be able to change id field (not automatically locked)")
+
 class Case03_HavingMutableField_Test(TestCase):
     def setUp(self):
         self.obj = HavingMutableField.objects.create(

@@ -19,7 +19,8 @@ class SimpleNoLockField(ImmutableModel):
 
     class Meta:
         immutable_fields = ['special_id']
-
+        immutable_lock_field = None
+        
 class SimpleLockField(ImmutableModel):
     special_id = models.IntegerField()
     name = models.CharField(max_length=50)
@@ -52,7 +53,8 @@ class NoisyNoLockField(ImmutableModel):
     class Meta:
         immutable_fields = ['special_id']
         immutable_quiet = False
-
+        immutable_lock_field = None
+        
 
 class NoisyLockField(ImmutableModel):
     special_id = models.IntegerField()
