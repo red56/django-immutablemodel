@@ -32,3 +32,8 @@ Release notes
 ---
 
 * Allowing for full inheritance of immutability options within Meta 
+
+0.3.3
+---
+
+* Fixing problem where immutable (non undeletable) models with default lock_field couldn't be deleted after save (because of Django deletion collector needing to change id field)
