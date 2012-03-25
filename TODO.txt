@@ -1,2 +1,5 @@
-Inheriting options from parent abstract classes?
-Tests for admin stuff.
+Should we allow lock_fields to be changed after locking 
+(ie. allow unlocking? maybe by default not, 
+but then have a new config option immutable_unlockable = True)
+
+Tests for admin ui.
