@@ -13,15 +13,14 @@ class HavingMutableField(ImmutableModel):
         mutable_fields = ['name']
 
 
-class SimpleNoSignOffField(ImmutableModel):
+class SimpleNoLockField(ImmutableModel):
     special_id = models.IntegerField()
     name = models.CharField(max_length=50)
 
     class Meta:
         immutable_fields = ['special_id']
 
-
-class SimpleSignOffField(ImmutableModel):
+class SimpleLockField(ImmutableModel):
     special_id = models.IntegerField()
     name = models.CharField(max_length=50)
     is_locked = models.BooleanField(default=False)
@@ -31,7 +30,7 @@ class SimpleSignOffField(ImmutableModel):
         immutable_lock_field = 'is_locked'
 
 
-class ComplexSignOffField(ImmutableModel):
+class ComplexLockField(ImmutableModel):
     is_locked = models.BooleanField(default=True)
     special_id = models.IntegerField()
     name = models.CharField(max_length=50)
@@ -47,7 +46,7 @@ class NoisyMinimal(ImmutableModel):
     class Meta:
         immutable_quiet = False
         
-class NoisyNoSignOffField(ImmutableModel):
+class NoisyNoLockField(ImmutableModel):
     special_id = models.IntegerField()
 
     class Meta:
@@ -55,7 +54,7 @@ class NoisyNoSignOffField(ImmutableModel):
         immutable_quiet = False
 
 
-class NoisySignOffField(ImmutableModel):
+class NoisyLockField(ImmutableModel):
     special_id = models.IntegerField()
     is_locked = models.BooleanField(default=False)
 

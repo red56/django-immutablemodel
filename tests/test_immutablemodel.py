@@ -32,9 +32,9 @@ class Case01_NoMetaTest(TestCase):
         )
 
 
-class Case02_CanCreateModelNoSignOffFieldTest(TestCase):
+class Case02_CanCreateModelNoLockFieldTest(TestCase):
     def setUp(self):
-        self.obj = SimpleNoSignOffField.objects.create(
+        self.obj = SimpleNoLockField.objects.create(
             special_id=1,
             name='Vader',
         )
@@ -48,7 +48,7 @@ class Case02_CanCreateModelNoSignOffFieldTest(TestCase):
 
         self.obj.save()
 
-        db_object = SimpleNoSignOffField.objects.all()[0]
+        db_object = SimpleNoLockField.objects.all()[0]
         # Should stay the same, it's immutable. Except the name.
         self.assertEqual(self.obj.special_id, 1)
         self.assertEqual(self.obj.name, 'Luke')
@@ -59,7 +59,7 @@ class Case02_CanCreateModelNoSignOffFieldTest(TestCase):
         self.obj.delete()
         self.assertEqual(
             0,
-            len(SimpleNoSignOffField.objects.all()),
+            len(SimpleNoLockField.objects.all()),
         )
 class Case03_HavingMutableField_Test(TestCase):
     def setUp(self):
@@ -85,9 +85,9 @@ class Case03_HavingMutableField_Test(TestCase):
         self.assertEqual(db_object.name, 'Luke')
 
 
-class Case03_CanCreateModelSignOffFieldTest(TestCase):
+class Case03_CanCreateModelLockFieldTest(TestCase):
     def setUp(self):
-        self.obj = SimpleSignOffField.objects.create(
+        self.obj = SimpleLockField.objects.create(
             special_id=1,
             name='Yoda',
             is_locked=False,
@@ -101,7 +101,7 @@ class Case03_CanCreateModelSignOffFieldTest(TestCase):
         self.obj.name = 'Obi-Wan'
         self.obj.save()
 
-        db_object = SimpleSignOffField.objects.all()[0]
+        db_object = SimpleLockField.objects.all()[0]
 
         # Should change, since the lock field is false
         self.assertEqual(self.obj.special_id, 1337)
@@ -117,7 +117,7 @@ class Case03_CanCreateModelSignOffFieldTest(TestCase):
         self.obj.name = 'Obi-Wan'
         self.obj.save()
 
-        db_object = SimpleSignOffField.objects.all()[0]
+        db_object = SimpleLockField.objects.all()[0]
 
         # Should not change, since the lock field is true
         # Of course, that name is still changable
@@ -132,7 +132,7 @@ class Case03_CanCreateModelSignOffFieldTest(TestCase):
         self.obj.delete()
         self.assertEqual(
             0,
-            len(SimpleSignOffField.objects.all()),
+            len(SimpleLockField.objects.all()),
         )
 
     def test__delete_locked(self):
@@ -141,13 +141,13 @@ class Case03_CanCreateModelSignOffFieldTest(TestCase):
         self.obj.delete()
         self.assertEqual(
             0,
-            len(SimpleSignOffField.objects.all()),
+            len(SimpleLockField.objects.all()),
         )
 
 
-class Case04_CanCreateModelSignOffFieldInAnyOrderTest(TestCase):
+class Case04_CanCreateModelLockFieldInAnyOrderTest(TestCase):
     def setUp(self):
-        self.obj = ComplexSignOffField.objects.create(
+        self.obj = ComplexLockField.objects.create(
             is_locked=False,
             special_id=1,
             name='Yoda',
@@ -161,7 +161,7 @@ class Case04_CanCreateModelSignOffFieldInAnyOrderTest(TestCase):
         self.obj.name = 'Obi-Wan'
         self.obj.save()
 
-        db_object = ComplexSignOffField.objects.all()[0]
+        db_object = ComplexLockField.objects.all()[0]
 
         # Should change, since the lock field is false
         self.assertEqual(self.obj.special_id, 1337)
@@ -177,7 +177,7 @@ class Case04_CanCreateModelSignOffFieldInAnyOrderTest(TestCase):
         self.obj.name = 'Obi-Wan'
         self.obj.save()
 
-        db_object = ComplexSignOffField.objects.all()[0]
+        db_object = ComplexLockField.objects.all()[0]
 
         # Should not change, since the lock field is true
         # Of course, that name is still changable
@@ -189,7 +189,7 @@ class Case04_CanCreateModelSignOffFieldInAnyOrderTest(TestCase):
         self.assertEqual(db_object.is_locked, True)
 
     def test__lock_field_true_at_create(self):
-        is_locked_at_first = ComplexSignOffField.objects.create(
+        is_locked_at_first = ComplexLockField.objects.create(
             is_locked=True,
             special_id=100,
             name='Yoda',
@@ -214,7 +214,7 @@ class Case04_CanCreateModelSignOffFieldInAnyOrderTest(TestCase):
         is_locked_at_first.name = 'Obi-Wan'
         is_locked_at_first.save()
 
-        db_object = ComplexSignOffField.objects.get(special_id=100)
+        db_object = ComplexLockField.objects.get(special_id=100)
 
         # Should not change, since the lock field is true
         # Of course, that name is still changable
@@ -229,7 +229,7 @@ class Case04_CanCreateModelSignOffFieldInAnyOrderTest(TestCase):
         self.obj.delete()
         self.assertEqual(
             0,
-            len(ComplexSignOffField.objects.all()),
+            len(ComplexLockField.objects.all()),
         )
 
     def test__delete_locked(self):
@@ -238,7 +238,7 @@ class Case04_CanCreateModelSignOffFieldInAnyOrderTest(TestCase):
         self.obj.delete()
         self.assertEqual(
             0,
-            len(ComplexSignOffField.objects.all()),
+            len(ComplexLockField.objects.all()),
         )
 
 class Case05_QuietCannotDelete(TestCase):
@@ -256,10 +256,10 @@ class Case05_QuietCannotDelete(TestCase):
 
 class Case06_WillRaiseErrorsTest(TestCase):
     def setUp(self):
-        self.no_lock_field = NoisyNoSignOffField.objects.create(
+        self.no_lock_field = NoisyNoLockField.objects.create(
             special_id=1,
         )
-        self.lock_field = NoisySignOffField.objects.create(
+        self.lock_field = NoisyLockField.objects.create(
             special_id=5,
         )
         self.not_deletable_noisy = NoisyNotDeletable.objects.create(
@@ -288,7 +288,7 @@ class Case06_WillRaiseErrorsTest(TestCase):
         )
 
     def test__lock_field_true_at_create(self):
-        is_locked_at_first = NoisySignOffField.objects.create(
+        is_locked_at_first = NoisyLockField.objects.create(
             is_locked=True,
             special_id=1,
         )
@@ -319,11 +319,11 @@ class Case06_WillRaiseErrorsTest(TestCase):
         )
         self.assertEqual(
             0,
-            len(NoisyNoSignOffField.objects.all()),
+            len(NoisyNoLockField.objects.all()),
         )
         self.assertEqual(
             0,
-            len(NoisySignOffField.objects.all()),
+            len(NoisyLockField.objects.all()),
         )
 
     def test__delete_locked(self):
@@ -332,7 +332,7 @@ class Case06_WillRaiseErrorsTest(TestCase):
         self.lock_field.delete()
         self.assertEqual(
             0,
-            len(NoisySignOffField.objects.all()),
+            len(NoisyLockField.objects.all()),
         )
 
     def test_can_delete_deletable_locked(self):
