@@ -37,3 +37,9 @@ Release notes
 ---
 
 * Fixing problem where immutable (non undeletable) models with default lock_field couldn't be deleted after save (because of Django deletion collector needing to change id field)
+
+0.3.4
+---
+
+* Making fields starting with _ always mutable (ignored by immutable model)
+
