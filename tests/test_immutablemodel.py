@@ -35,6 +35,25 @@ class Case01_NoMetaTest(TestCase):
         self.obj.id = None
         self.assertNotEqual(self.obj.id, None, "expecting not to be able to change id field (not automatically locked)")
 
+class Case01b_UnderscoredField(TestCase):
+    def setUp(self):
+        self.obj = HavingUnderscoredField.objects.create(name='Vader', _something_mutable=10)
+        self.assertEqual(self.obj._something_mutable, 10)
+
+    def test01_can_change_underscored_field(self):
+        """A field which starts with an underscore is always mutable"""
+        self.obj._something_mutable = 20
+        self.obj.save()
+        self.assertEqual(self.obj._something_mutable, 20)
+
+    def test02_can_change_underscored_field_stored_in_db(self):
+        """A field which starts with an underscore is always mutable (and is saved so)"""
+        self.obj._something_mutable = 20
+        self.obj.save()
+
+        db_object = HavingUnderscoredField.objects.all()[0]
+        self.assertEqual(db_object._something_mutable, 20)
+
 
 class Case02_CanCreateModelNoLockFieldTest(TestCase):
     def setUp(self):

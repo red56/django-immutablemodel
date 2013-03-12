@@ -107,6 +107,9 @@ List the fields you actually want mutable in "mutable_fields"
              mutable_fields = ['passengers'] 
 
 
+Please note that fields beginning with an underscore are ignored by ImmutableModel - this allows immutable_lock_field to be a @property
+(ie. they are automatically mutable - thanks to https://github.com/Bouke for contributing a patch for this -- see https://github.com/red56/django-immutablemodel/pull/1)
+
 Reference
 ---------
 
