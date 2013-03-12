@@ -5,6 +5,11 @@ class NoMeta(ImmutableModel):
     name = models.CharField(max_length=50)
 
 
+class HavingUnderscoredField(ImmutableModel):
+    name = models.CharField(max_length=50)
+    _something_mutable = models.IntegerField()
+
+
 class HavingMutableField(ImmutableModel):
     special_id = models.IntegerField()
     name = models.CharField(max_length=50)
