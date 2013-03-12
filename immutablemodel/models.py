@@ -148,6 +148,8 @@ class ImmutableModel(models.Model):
     __metaclass__ = ImmutableModelMeta
 
     def can_change_field(self, field_name):
+        if field_name.startswith('_'):
+            return True  # allow changing private fields, no matter immutability
         field_changable = field_name in self._meta.mutable_fields or not self.is_immutable()
         if not field_changable and field_name == self._meta.pk.attname:
             if getattr(self, '_deleting_immutable_model', False):
