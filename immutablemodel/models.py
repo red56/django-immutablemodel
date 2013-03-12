@@ -156,7 +156,7 @@ class ImmutableModel(models.Model):
         return field_changable
     
     def __setattr__(self, name, value):
-        if not self.can_change_field(name):
+        if not name.startswith('_') and not self.can_change_field(name):
             try:
                 current_value = getattr(self, name, None)
             except:
