@@ -1,6 +1,6 @@
 # encoding: utf-8
-import six
 from django.db import models
+from django.utils import six
 
 
 class Option(object):
