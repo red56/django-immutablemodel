@@ -15,6 +15,8 @@ INSTALLED_APPS = (
     'tests.testapp',
 )
 
+MIDDLEWARE_CLASSES=[]
+
 SECRET_KEY = '-test-'
 
 TEST_RUNNER = 'django_nose.runner.NoseTestSuiteRunner'
