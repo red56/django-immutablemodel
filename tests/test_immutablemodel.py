@@ -1,7 +1,7 @@
 # encoding: utf-8
 from django.test import TestCase
 
-from testapp.models import *
+from .testapp.models import *
 from immutablemodel.models import CantDeleteImmutableException
 
 class Case01_NoMetaTest(TestCase):
@@ -23,7 +23,7 @@ class Case01_NoMetaTest(TestCase):
         obj.name = 'Darth'
         obj.save()
         self.assertEqual(obj.name, 'Darth')
-        
+
     def test03_delete(self):
         self.obj.delete()
         self.assertEqual(
@@ -84,7 +84,7 @@ class Case02_CanCreateModelNoLockFieldTest(TestCase):
             0,
             len(SimpleNoLockField.objects.all()),
         )
-        
+
     def test_can_change_id_field(self):
         self.obj.id = None
         self.assertEqual(self.obj.id, None, "expecting to be able to change id field (not automatically locked)")
@@ -374,9 +374,9 @@ class Case06_WillRaiseErrorsTest(TestCase):
             model = instance.__class__
             instance.delete()
             self.assertFalse(model.objects.filter(pk=instance_id).exists(), 'not expecting %s to exist after delete' % name)
-            
+
 class Case07_InheritenceTests(TestCase):
-    
+
     def test01_defaults_work_for_abstract(self):
         c = ChildModel(parent_field="parent", child_field="child")
         c.save()
@@ -400,7 +400,7 @@ class Case07_InheritenceTests(TestCase):
             self.assertEqual(t.child_field, "child", "expecting %s.child_field" % name)
             self.assertEqual(t.special_id, 1, "expecting %s.special_id" % name)
             self.assertEqual(t.mutable_field, "other", "expecting %s.mutable_field" % name)
-    
+
     def test03_can_inherit_attributes_from_inherited_meta(self):
         self.assertEqual(['mutable_field'], AbstractModelWithAttrs._meta.mutable_fields)
         self.assertEqual(['mutable_field'], NoisyAbstractModelWithAttrs._meta.mutable_fields)
@@ -410,8 +410,8 @@ class Case07_InheritenceTests(TestCase):
         c.save()
         def changeme():
             c.child_field="other"
-            c.special_id=47   
-        self.assertRaises(Exception, changeme, 
+            c.special_id=47
+        self.assertRaises(Exception, changeme,
              'expecting exception to be raised because immutable quiet should be inherited'
             )
         c.mutable_field="other"
@@ -421,4 +421,3 @@ class Case07_InheritenceTests(TestCase):
             self.assertEqual(t.child_field, "child", "expecting %s.child_field" % name)
             self.assertEqual(t.special_id, 1, "expecting %s.special_id" % name)
             self.assertEqual(t.mutable_field, "other", "expecting %s.mutable_field" % name)
-            

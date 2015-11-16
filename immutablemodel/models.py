@@ -1,12 +1,13 @@
 # encoding: utf-8
 from django.db import models
+from django.utils import six
 
 
 class Option(object):
     def __init__(self, name, default=None):
         self.name = name
         self.default = default
-        
+
     def get_default_for(self, model_class):
         return self.default
 
@@ -26,11 +27,11 @@ class FieldsOption(Option):
 
 class CantDeleteImmutableException(Exception): pass
 
-class __Undefined(object): 
+class __Undefined(object):
     def __len__(self):
         return False
     def __repr__(self):
-        return u"__Undefined()"
+        return six.text_type("__Undefined()")
 UNDEFINED = __Undefined()
 
 class PK_FIELD: pass
@@ -42,7 +43,7 @@ IMMUTABLEFIELD_OPTIONS = dict([(opt.name, opt) for opt in (
     Option('immutable_lock_field', default=PK_FIELD),
     Option('immutable_is_deletable', default=True),
     )])
-    
+
 
 class ImmutableModelMeta(models.base.ModelBase):
     def __new__(cls, name, bases, attrs):
@@ -64,12 +65,12 @@ class ImmutableModelMeta(models.base.ModelBase):
         ImmutableModelMeta.check_and_reinject_options(immutability_options, registered_model)
         return registered_model
 
-    @staticmethod 
+    @staticmethod
     def meta_from_bases(bases):
-        for b in bases: 
+        for b in bases:
             if issubclass(b, ImmutableModel) and b is not ImmutableModel:
                 return getattr(b, "Meta")
-                
+
     @staticmethod
     def immutable_options_from_meta(meta):
         immutability_options = {}
@@ -77,7 +78,7 @@ class ImmutableModelMeta(models.base.ModelBase):
             value = getattr(meta, opt_name, UNDEFINED)
             immutability_options[opt_name] = value
         return immutability_options
-    
+
     @staticmethod
     def strip_immutability_options(meta):
         if "immutable" in dir(meta):
@@ -88,15 +89,15 @@ class ImmutableModelMeta(models.base.ModelBase):
                 stripped[opt_name] = getattr(meta, opt_name)
                 delattr(meta, opt_name)
         return stripped
-    
+
     @staticmethod
     def reattach_stripped(meta, stripped):
-        for k,v in stripped.iteritems():
+        for k,v in six.iteritems(stripped):
             setattr(meta, k, v)
-             
+
     @staticmethod
     def check_and_reinject_options(immutability_options, model):
-        for opt_name, value in immutability_options.iteritems():
+        for opt_name, value in six.iteritems(immutability_options):
             if value is UNDEFINED and getattr(model._meta, opt_name, UNDEFINED) is UNDEFINED:
                 #only want to use default when registered_model doesn't have a value yet
                 value = IMMUTABLEFIELD_OPTIONS[opt_name].get_default_for(model)
@@ -109,33 +110,33 @@ class ImmutableModelMeta(models.base.ModelBase):
         if not isinstance(model._meta.mutable_fields, list):
             raise TypeError('mutable_fields attribute in %s must be '
                             'a list' % model)
-        
+
         if immutability_options['mutable_fields'] and immutability_options["immutable_fields"]:
             we_found = ("We found:\n" +
             ("mutable_fields: %s\n" % "mutable_fields")+
             ("immutable_fields: %s\n" % immutability_options["immutable_fields"])
             )
             raise ValueError('You can specify either mutable_fields OR immutable_fields in %s (not both).\n%s' % (model, we_found))
-        
+
         if immutability_options["immutable_fields"]:
             model._meta.mutable_fields = [f.name for f in model._meta.fields if f.name not in immutability_options["immutable_fields"]]
         # we'll make immutable_admin_fields as the reverse of mutable fields:
         model._meta.immutable_admin_fields = [f.name for f in model._meta.fields if f.name not in model._meta.mutable_fields]
-        
+
         if model._meta.abstract:
             # ignore immutable_lock_field in abstract models
             pass
         else:
             if model._meta.immutable_lock_field is PK_FIELD:
                 model._meta.immutable_lock_field = model._meta.pk.name
-            elif (isinstance(model._meta.immutable_lock_field, basestring) or 
+            elif (isinstance(model._meta.immutable_lock_field, six.string_types) or
                 model._meta.immutable_lock_field is None
                 ):
                 pass
             else:
                 raise TypeError('immutable_lock_field attribute in '
                                 '%s must be a string (or None, or omitted)' % model)
-        
+
         if not isinstance(model._meta.immutable_quiet, bool):
             raise TypeError('immutable_quiet attribute in %s must '
                             'be boolean' % model)
@@ -143,10 +144,8 @@ class ImmutableModelMeta(models.base.ModelBase):
         if not isinstance(model._meta.immutable_is_deletable, bool):
             raise TypeError('immutable_is_deletable attribute in %s must '
                             'be boolean' % model)
-            
-class ImmutableModel(models.Model):
-    __metaclass__ = ImmutableModelMeta
 
+class ImmutableModel(six.with_metaclass(ImmutableModelMeta, models.Model)):
     def can_change_field(self, field_name):
         if field_name.startswith('_'):
             return True  # allow changing private fields, no matter immutability
@@ -154,9 +153,9 @@ class ImmutableModel(models.Model):
         if not field_changable and field_name == self._meta.pk.attname:
             if getattr(self, '_deleting_immutable_model', False):
                 #deleting this immutable model, so need to allow Collector.delete to change the field
-                return True 
+                return True
         return field_changable
-    
+
     def __setattr__(self, name, value):
         if not self.can_change_field(name):
             try:
@@ -201,4 +200,3 @@ class ImmutableModel(models.Model):
 
     class Meta:
         abstract = True
-
