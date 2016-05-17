@@ -130,7 +130,7 @@ Reference
 
         Specify multiple fields::
 
-            class ImmutableMeta:
+            class Meta:
                 mutable_fields = ['some_transient_data', 'name', 'foreign_key']
 
     ``immutable_fields``
@@ -145,7 +145,7 @@ Reference
 
         Specify multiple fields::
 
-            class ImmutableMeta:
+            class Meta:
                 immutable_fields = ['my_special_id', 'name', 'foreign_key']
     
     ``immutable_quiet``
@@ -156,7 +156,7 @@ Reference
         Set this value to ``False`` to raise a ``ValueError`` when an immutable
         field is changed.::
 
-            class ImmutableMeta:
+            class Meta:
                 immutable_quiet = False
 
     ``immutable_lock_field``
@@ -167,7 +167,7 @@ Reference
         Alternatively you can specify a field by name, or you can set it to None, which means that you can't change
         immutable fields once they are set (even before saving).
 
-            class ImmutableMeta:
+            class Meta:
                 immutable_lock_field = ['is_locked']
 
 
